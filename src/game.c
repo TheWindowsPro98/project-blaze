@@ -23,4 +23,5 @@ void gametest()
     XGM_startPlay(stg1);
     VDP_drawImageEx(BG_B,&options_bg,TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,ind),0,0,FALSE,TRUE);
     sPlayer = SPR_addSprite(&stephanie, 0,56,TILE_ATTR(PAL1,TRUE,FALSE,FALSE));
+    JOY_setEventHandler(gameBtn);
 }
