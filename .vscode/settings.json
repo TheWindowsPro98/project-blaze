@@ -1,8 +1,0 @@
-{
-    "files.associations": {
-        "genesis.h": "c",
-        "opts.h": "c",
-        "resources.h": "c",
-        "jukebox.h": "c"
-    }
-}
