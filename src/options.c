@@ -1,9 +1,4 @@
-#include <genesis.h>
-#include "resources.h"
-#include "opts.h"
-#include "main.h"
-#include "jukebox.h"
-#include "game.h"
+#include "includes.h"
 
 u8 currentIndex = 0;			// Currently selected menu item
 u8 round = 0x00;                // Current Level

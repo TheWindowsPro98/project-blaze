@@ -1,8 +1,4 @@
-#include <genesis.h>
-#include <resources.h>
-#include "opts.h"
-#include "jukebox.h"
-#include "main.h"
+#include "includes.h"
 
 Option menu_mus[NUM_OPTS_MUS] = {
     {OPTX_MUS, OPTY_MUS, "Test Track"},

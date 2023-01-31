@@ -1,7 +1,4 @@
-#ifndef MAIN_H
-#define MAIN_H
+#pragma once
 
 void mainscrn();
 void sampleDefs();
-
-#endif

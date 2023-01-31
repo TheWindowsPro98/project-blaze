@@ -1,6 +1,6 @@
-#ifndef JUKEBOX_H
-#define JUKEBOX_H
-#include "opts.h"
+#pragma once
+
+#include "includes.h"
 
 #define NUM_OPTS_MUS 16
 #define NUM_OPTS_SFX 27
@@ -12,5 +12,3 @@
 Option menu_mus[NUM_OPTS_MUS]; 
 void musPlayer();
 void sfxPlayer();
-
-#endif

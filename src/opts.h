@@ -1,5 +1,4 @@
-#ifndef OPTS_H
-#define OPTS_H
+#pragma once
 
 #define NUM_OPTS_MAIN 4
 #define NUM_OPTS_OPS 7
@@ -38,5 +37,3 @@ void pickLvlSel();
 void pickOpts();
 void pickCG();
 static void joyEvent_ops(u16 joy,u16 changed,u16 state);
-
-#endif

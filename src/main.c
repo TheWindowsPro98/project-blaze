@@ -1,7 +1,4 @@
-#include <genesis.h>
-#include <resources.h>
-#include "opts.h"
-#include "main.h"
+#include "includes.h"
 
 static void joyEvent_Title(u16 joy, u16 changed, u16 state)
 {
@@ -49,6 +46,10 @@ void mainscrn()
 	{
     	Option o = menu_main[i];
     	VDP_drawTextEx(BG_A,o.label,TILE_ATTR(PAL1,FALSE,FALSE,FALSE),o.x,o.y,DMA);
+		if (i == NUM_OPTS_MAIN)
+		{
+			break;
+		}
 	}
 }
 static void title()
@@ -57,7 +58,7 @@ static void title()
 	PAL_fadeInPalette(PAL1,title_tmp.data,30,TRUE);
 	VDP_loadFont(custom_font.tileset,DMA);
 	VDP_drawTextEx(BG_A, "@ TWP98 2017-2022", TILE_ATTR(PAL1,FALSE,FALSE,FALSE),0,27,DMA);
-	VDP_drawTextEx(BG_A, "Project Blaze Version pa5.86",TILE_ATTR(PAL1,FALSE,FALSE,FALSE),5,12,DMA);
+	VDP_drawTextEx(BG_A, "Project Blaze Version pa5.87",TILE_ATTR(PAL1,FALSE,FALSE,FALSE),5,12,DMA);
 	VDP_drawTextEx(BG_A,"PRESS START",TILE_ATTR(PAL1,FALSE,FALSE,FALSE),14,13,DMA);
 	JOY_setEventHandler(&joyEvent_Title);
 }
@@ -112,5 +113,5 @@ int main()
 		SPR_update();
 		SYS_doVBlankProcess();
 	}
-	return (0);
+	return 0;
 }
