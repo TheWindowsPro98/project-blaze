@@ -48,6 +48,23 @@ Option menu_sfx[NUM_OPTS_SFX] = {
     {OPTX_SFX+13, OPTY_SFX+17, "Back"},
 };
 
+static void calcXGMLoad()
+{
+    u8 CPULoad;
+    char CPUStr[3];
+    while(1)
+    {
+        CPULoad = XGM_getCPULoad();
+        intToStr(CPULoad, CPUStr, 3);
+        VDP_drawTextEx(BG_A, "Z80 Load:",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),0,27,DMA);
+        VDP_drawTextEx(BG_A,CPUStr, TILE_ATTR(PAL3,FALSE,FALSE,FALSE),9,27,DMA);
+        VDP_drawTextEx(BG_A,"\%",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),12,27,DMA);
+        SPR_update();
+        XGM_nextFrame();
+        SYS_doVBlankProcess();
+    }
+}
+
 void selectOptionMus(u16 Option)
 {
     switch (Option)
@@ -424,6 +441,7 @@ void musPlayer()
     }
     JOY_setEventHandler(joyEvent_mus);
     musCurUpd();
+    calcXGMLoad();
 }
 
 void sfxPlayer()
@@ -444,5 +462,6 @@ void sfxPlayer()
         VDP_drawTextEx(BG_A,o.label,TILE_ATTR(PAL3,FALSE,FALSE,FALSE),o.x,o.y,DMA);
     }
     JOY_setEventHandler(joyEvent_sfx);
+    calcXGMLoad();
     sfxCurUpd();
 }

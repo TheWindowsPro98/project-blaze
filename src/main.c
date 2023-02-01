@@ -57,13 +57,8 @@ void mainscrn()
 	}
 	while(1)
 	{
-		mapScrl += 0.333;
+		mapScrl -= 0.333;
 		VDP_setHorizontalScroll(BG_B,mapScrl);
-		if (mapScrl == 512)
-		{
-			mapScrl = 0;
-		}
-		XGM_nextFrame();
 		SPR_update();
 		SYS_doVBlankProcess();
 	}
@@ -76,8 +71,8 @@ static void title()
 	PAL_fadeInPalette(PAL1,stephanie.palette->data,30,TRUE);
 	PAL_setPalette(PAL2,palette_black,DMA);
 	VDP_loadFont(custom_font.tileset,DMA);
-	VDP_drawTextEx(BG_A, "@ TWP98 2017-2022", TILE_ATTR(PAL1,FALSE,FALSE,FALSE),0,27,DMA);
-	VDP_drawTextEx(BG_A, "Project Blaze Version pa5.88",TILE_ATTR(PAL1,FALSE,FALSE,FALSE),5,12,DMA);
+	VDP_drawTextEx(BG_A, "@ TWP98 2022-2023", TILE_ATTR(PAL1,FALSE,FALSE,FALSE),0,27,DMA);
+	VDP_drawTextEx(BG_A, "Project Blaze Version pa5.9",TILE_ATTR(PAL1,FALSE,FALSE,FALSE),6,12,DMA);
 	VDP_drawTextEx(BG_A,"PRESS START",TILE_ATTR(PAL2,FALSE,FALSE,FALSE),14,13,DMA);
 	waitMs(500);
 	JOY_setEventHandler(&joyEvent_Title);
@@ -129,13 +124,12 @@ int main(int resetType)
 	SPR_init();
 	VRAM_createRegion(&sega_scrn, 0, 48);
 	VRAM_alloc(&sega_scrn,48);
+	PAL_setPalette(PAL0, palette_black, DMA);
 	PAL_fadeInPalette(PAL0,sega_logo.palette->data,30,TRUE);
-	VDP_drawImageEx(BG_A, &sega_logo,TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,sega_scrn), 13, 12, FALSE, TRUE);	
-	waitTick(128);
+	VDP_drawImageEx(BG_A, &sega_logo,TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,sega_scrn), 12, 12, FALSE, TRUE);
 	SND_startPlay_PCM(&segapcm, sizeof(segapcm), SOUND_RATE_11025, SOUND_PAN_CENTER, FALSE);
-	waitMs(2536);
-	PAL_fadeOutAll(30,TRUE);
-	waitMs(1000);
+	waitMs(2408);
+	PAL_fadeOutPalette(PAL0, 30, FALSE);
 	VRAM_free(&sega_scrn,0);
 	VDP_clearPlane(BG_A,TRUE);
 	VRAM_clearRegion(&sega_scrn);

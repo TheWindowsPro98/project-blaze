@@ -7,6 +7,9 @@ u8 lives = 0x05;
 u8 difficulty = 0x01;           // 0 = Easy, 1 = Normal, 2 = Hard, 3 = Even Harder (that's what she said)
 u32 score = 0x000000;
 u8 player_ci = 0x01;            // 0 = Lucy, 1 = Stephanie, 2 = Cynthia, 3 = Selina
+Sprite* cursor_cnf;
+Sprite* cursor_plr;
+Sprite* cursor_cst;
 
 Option menu_main[NUM_OPTS_MAIN] = {
 	{OPTX_MAIN, OPTY_MAIN, "New Game"},
@@ -16,10 +19,14 @@ Option menu_main[NUM_OPTS_MAIN] = {
 };
 
 Option menu_ops[NUM_OPTS_OPS] = {
-    {OPTX_OPS+12, OPTY_OPS, "Easy"},
-    {OPTX_OPS+12, OPTY_OPS+1, "Normal"},
-    {OPTX_OPS+12, OPTY_OPS+2, "Hard"},
-    {OPTX_OPS+12, OPTY_OPS+3, "Harder"}, // That's still what she said
+    {OPTX_OPS+12, OPTY_OPS-6, "Easy"},
+    {OPTX_OPS+12, OPTY_OPS-5, "Normal"},
+    {OPTX_OPS+12, OPTY_OPS-4, "Hard"},
+    {OPTX_OPS+12, OPTY_OPS-3, "Harder"}, // That's still what she said
+    {OPTX_OPS+12, OPTY_OPS-1, "Lucy"},
+    {OPTX_OPS+12, OPTY_OPS, "Stephanie"},
+    {OPTX_OPS+12, OPTY_OPS+1, "Cynthia"},
+    {OPTX_OPS+12, OPTY_OPS+2, "Selina"},
     {OPTX_OPS+4, OPTY_OPS+5, "Music Box"},
     {OPTX_OPS+5, OPTY_OPS+6, "SFX Box"},
     {OPTX_OPS+6, OPTY_OPS+8, "Exit"},
@@ -183,15 +190,39 @@ void selectOptionOpts(u16 Option)
     }
     case 4:
     {
-        musPlayer();
+        SPR_setPosition(cursor_plr,menu_ops[currentIndex].x*8-8,menu_ops[currentIndex].y*8);
+        player_ci = 0;
         break;
     }
     case 5:
     {
-        sfxPlayer();
+        SPR_setPosition(cursor_plr,menu_ops[currentIndex].x*8-8,menu_ops[currentIndex].y*8);
+        player_ci = 1;
         break;
     }
     case 6:
+    {
+        SPR_setPosition(cursor_plr,menu_ops[currentIndex].x*8-8,menu_ops[currentIndex].y*8);
+        player_ci = 2;
+        break;
+    }
+    case 7:
+    {
+        SPR_setPosition(cursor_plr,menu_ops[currentIndex].x*8-8,menu_ops[currentIndex].y*8);
+        player_ci = 3;
+        break;
+    }
+    case 8:
+    {
+        musPlayer();
+        break;
+    }
+    case 9:
+    {
+        sfxPlayer();
+        break;
+    }
+    case 10:
     {
         mainscrn();
         break;
@@ -227,7 +258,7 @@ static void dummyJoyEvent(u16 joy, u16 changed, u16 state)
 
 void pickOpts()
 {
-    currentIndex = difficulty;
+    currentIndex = 0;
     PAL_setPalette(PAL0,palette_black,DMA);
 	PAL_setPalette(PAL1,palette_black,DMA);
 	PAL_setPalette(PAL2,palette_black,DMA);
@@ -237,7 +268,7 @@ void pickOpts()
     VDP_releaseAllSprites();
     VDP_drawTextEx(BG_A,"Changes will only take effect upon",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),2,0,DMA);
     VDP_drawTextEx(BG_A,"starting a new game.",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),2,1,DMA);
-    VDP_drawTextEx(BG_A,"Difficulty:",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),OPTX_OPS,OPTY_OPS,DMA);
+    VDP_drawTextEx(BG_A,"Difficulty:",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),OPTX_OPS,OPTY_OPS-6,DMA);
     int i = 0;
     for (i; i < NUM_OPTS_OPS; i++)
     {
@@ -245,7 +276,8 @@ void pickOpts()
         VDP_drawTextEx(BG_A,o.label,TILE_ATTR(PAL3,FALSE,FALSE,FALSE),o.x,o.y,DMA);
     }
     cursor_cst = SPR_addSprite(&cursor,menu_ops[currentIndex].x*8-8,menu_ops[currentIndex].y*8,TILE_ATTR(PAL3,TRUE,FALSE,FALSE));
-    cursor_cnf = SPR_addSprite(&cursor,menu_ops[currentIndex].x*8-8,menu_ops[currentIndex].y*8,TILE_ATTR(PAL3,TRUE,FALSE,FALSE));
+    cursor_cnf = SPR_addSprite(&cursor,menu_ops[difficulty].x*8-8,menu_ops[difficulty].y*8,TILE_ATTR(PAL3,TRUE,FALSE,FALSE));
+    cursor_plr = SPR_addSprite(&cursor,menu_ops[player_ci].x*8-8,menu_ops[player_ci+4].y*8,TILE_ATTR(PAL3,TRUE,FALSE,FALSE));
     JOY_setEventHandler(&joyEvent_ops);
     opsCurUpd();
 }
