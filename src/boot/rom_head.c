@@ -10,8 +10,8 @@ const ROMHeader rom_header = {
     "SEGA GENESIS    ", // Needed, or else cart won't boot
 #endif
     "(C)TWP98 2017-22", // Copyright date
-    "PROJECT BLAZE           MEGADRIVE BUILD 20230130", // JUE/EUR Cart Name
-    "PROJECT BLAZE           GENESIS   BUILD 20230130", // USA Cart Name
+    "PROJECT BLAZE           MEGADRIVE BUILD 20230201", // JUE/EUR Cart Name
+    "PROJECT BLAZE           GENESIS   BUILD 20230201", // USA Cart Name
     "GM 00000001-05", // Build Version
     0x000,
     "JD              ", // Joypads
@@ -28,6 +28,6 @@ const ROMHeader rom_header = {
     0x00200000,
     0x0020FFFF,
     "            ",
-    "80 days on the clock; hit the damn gas! ", // Notes (not processed)
+    "78 days on the clock; hit the damn gas! ", // Notes (not processed)
     "USA             " // Country
 };

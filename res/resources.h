@@ -49,10 +49,9 @@ extern const u8 stg7[62976];
 extern const u8 stg8[116480];
 extern const Image sega_logo;
 extern const Image custom_font;
-extern const Image options_bg;
+extern const TileSet options_tiles;
+extern const TileMap options_map;
 extern const SpriteDefinition stephanie;
 extern const SpriteDefinition cursor;
-extern const Palette mainpal;
-extern const Palette title_tmp;
 
 #endif // _RES_RESOURCES_H_

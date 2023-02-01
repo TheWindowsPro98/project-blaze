@@ -1,7 +1,12 @@
-# Tiles
+# Images
 IMAGE sega_logo "gfx/sega.png" BEST ALL
 IMAGE custom_font "gfx/font_default.png" BEST NONE 
-IMAGE options_bg "gfx/options_bg.png" BEST ALL 
+
+# Tilesets
+TILESET options_tiles "tiles/stg1.png" BEST ALL 
+
+# Tilemaps
+TILEMAP options_map "maps/options_bg.png" options_tiles BEST ALL
 
 # Sprites
 SPRITE stephanie "gfx/stephanie_rev0.png" 8 8 BEST 12
@@ -60,7 +65,3 @@ XGM stg5 "vgm/bridge.vgm"
 XGM stg6 "vgm/station.vgm"
 XGM stg7 "vgm/train.vgm"
 XGM stg8 "vgm/final.vgm"
-
-# Palettes
-PALETTE mainpal "gfx/mainpal.png" 
-PALETTE title_tmp "gfx/lucy_rev0.png"

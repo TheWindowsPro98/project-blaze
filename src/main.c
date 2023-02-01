@@ -1,5 +1,8 @@
 #include "includes.h"
 
+VRAMRegion* sega_scrn;
+VRAMRegion* options_vram;
+
 static void joyEvent_Title(u16 joy, u16 changed, u16 state)
 {
 	if (state & BUTTON_START)
@@ -27,40 +30,63 @@ static void joyEvent_ms(u16 joy, u16 changed, u16 state)
 		selectOptMain(currentIndex);
 	}
 }
+
 void mainscrn()
 {
+	double mapScrl = 0;
+	VRAM_createRegion(&options_vram,0,18);
+	VRAM_alloc(&options_vram, 18);
 	VDP_releaseAllSprites();
 	currentIndex = 0;
-	u16 ind = TILE_USER_INDEX;
 	PAL_setPalette(PAL0,palette_black,DMA);
-    PAL_setPalette(PAL1,palette_black,DMA);
-	PAL_fadeInAll(mainpal.data,30,TRUE);
-	cursor_cst = SPR_addSprite(&cursor,0,0,TILE_ATTR(PAL1,TRUE,FALSE,FALSE));
+	PAL_setPalette(PAL1,palette_black,DMA);
+	PAL_setPalette(PAL2,palette_black,DMA);
+	PAL_setPalette(PAL3,palette_white_text,DMA);
+    PAL_fadeIn(16,47,options_pal,30,TRUE);
+	cursor_cst = SPR_addSprite(&cursor,0,0,TILE_ATTR(PAL3,TRUE,FALSE,FALSE));
 	VDP_clearPlane(BG_A,TRUE);
-	VDP_drawImageEx(BG_B,&options_bg,TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,ind),0,0,FALSE,TRUE);
+	VDP_loadTileSet(&options_tiles,options_vram,DMA);
+	VDP_setTileMapEx(BG_B,&options_map,TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,options_vram),0,0,0,0,64,28,DMA);
 	VDP_setScrollingMode(HSCROLL_PLANE,VSCROLL_PLANE);
-	VDP_setScrollingMode(HSCROLL_TILE,VSCROLL_PLANE);
 	JOY_setEventHandler(&joyEvent_ms);
 	mainCurUpd();
 	for (int i = 0; i < NUM_OPTS_MAIN; i++)
 	{
     	Option o = menu_main[i];
-    	VDP_drawTextEx(BG_A,o.label,TILE_ATTR(PAL1,FALSE,FALSE,FALSE),o.x,o.y,DMA);
-		if (i == NUM_OPTS_MAIN)
+    	VDP_drawTextEx(BG_A,o.label,TILE_ATTR(PAL3,FALSE,FALSE,FALSE),o.x,o.y,DMA);
+	}
+	while(1)
+	{
+		mapScrl += 0.333;
+		VDP_setHorizontalScroll(BG_B,mapScrl);
+		if (mapScrl == 512)
 		{
-			break;
+			mapScrl = 0;
 		}
+		XGM_nextFrame();
+		SPR_update();
+		SYS_doVBlankProcess();
 	}
 }
 static void title()
 {
+	
 	PAL_setPalette(PAL0,palette_black,DMA);
-	PAL_fadeInPalette(PAL1,title_tmp.data,30,TRUE);
+	PAL_setPalette(PAL1,palette_black,DMA);
+	PAL_fadeInPalette(PAL1,stephanie.palette->data,30,TRUE);
+	PAL_setPalette(PAL2,palette_black,DMA);
 	VDP_loadFont(custom_font.tileset,DMA);
 	VDP_drawTextEx(BG_A, "@ TWP98 2017-2022", TILE_ATTR(PAL1,FALSE,FALSE,FALSE),0,27,DMA);
-	VDP_drawTextEx(BG_A, "Project Blaze Version pa5.87",TILE_ATTR(PAL1,FALSE,FALSE,FALSE),5,12,DMA);
-	VDP_drawTextEx(BG_A,"PRESS START",TILE_ATTR(PAL1,FALSE,FALSE,FALSE),14,13,DMA);
+	VDP_drawTextEx(BG_A, "Project Blaze Version pa5.88",TILE_ATTR(PAL1,FALSE,FALSE,FALSE),5,12,DMA);
+	VDP_drawTextEx(BG_A,"PRESS START",TILE_ATTR(PAL2,FALSE,FALSE,FALSE),14,13,DMA);
+	waitMs(500);
 	JOY_setEventHandler(&joyEvent_Title);
+	while(1)
+	{
+		SYS_doVBlankProcess();
+		PAL_fadeInPalette(PAL2,stephanie.palette->data,45,FALSE);
+		PAL_fadeOutPalette(PAL2,45,FALSE);
+	}
 }
 
 void sampleDefs()
@@ -94,23 +120,29 @@ void sampleDefs()
 	XGM_setPCM(88,mans_throw_item,sizeof(mans_throw_item));
 }
 
-int main()
+int main(int resetType)
 {
+	if (resetType == 0)
+	{
+		SYS_hardReset();
+	}
 	SPR_init();
-	u16 ind = TILE_USER_INDEX;
+	VRAM_createRegion(&sega_scrn, 0, 48);
+	VRAM_alloc(&sega_scrn,48);
 	PAL_fadeInPalette(PAL0,sega_logo.palette->data,30,TRUE);
-	VDP_drawImageEx(BG_A, &sega_logo,TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,ind), 13, 12, FALSE, TRUE);	
+	VDP_drawImageEx(BG_A, &sega_logo,TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,sega_scrn), 13, 12, FALSE, TRUE);	
 	waitTick(128);
 	SND_startPlay_PCM(&segapcm, sizeof(segapcm), SOUND_RATE_11025, SOUND_PAN_CENTER, FALSE);
 	waitMs(2536);
 	PAL_fadeOutAll(30,TRUE);
 	waitMs(1000);
+	VRAM_free(&sega_scrn,0);
 	VDP_clearPlane(BG_A,TRUE);
+	VRAM_clearRegion(&sega_scrn);
 	sampleDefs();
 	title();
 	while(1)
 	{   
-		SPR_update();
 		SYS_doVBlankProcess();
 	}
 	return 0;

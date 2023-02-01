@@ -6,6 +6,7 @@ bool lsul = FALSE;              // Is level select enabled? (1 - yes, 0 - no)
 u8 lives = 0x05;
 u8 difficulty = 0x01;           // 0 = Easy, 1 = Normal, 2 = Hard, 3 = Even Harder (that's what she said)
 u32 score = 0x000000;
+u8 player_ci = 0x01;            // 0 = Lucy, 1 = Stephanie, 2 = Cynthia, 3 = Selina
 
 Option menu_main[NUM_OPTS_MAIN] = {
 	{OPTX_MAIN, OPTY_MAIN, "New Game"},
@@ -129,6 +130,7 @@ void pickSG()
     SRAM_writeByte(SRAM_OFFSET+2, lives);
     SRAM_writeByte(SRAM_OFFSET+3, difficulty);
     SRAM_writeLong(SRAM_OFFSET+4, score);
+    SRAM_writeByte(SRAM_OFFSET+12, player_ci);
     SRAM_disable();
     SYS_enableInts();
     waitMs(1131);
@@ -143,9 +145,10 @@ void pickSG()
 void pickLvlSel()
 {
     PAL_setPalette(PAL0,palette_black,DMA);
-    PAL_setPalette(PAL1,palette_black,DMA);
-    PAL_fadeInAll(mainpal.data,30,TRUE);
-    PAL_setPalette(PAL1,stephanie.palette->data,DMA);
+	PAL_setPalette(PAL1,palette_black,DMA);
+	PAL_setPalette(PAL2,palette_black,DMA);
+	PAL_setPalette(PAL3,palette_white_text,DMA);
+    PAL_fadeIn(16,47,options_pal,30,TRUE);
     VDP_clearPlane(BG_A,TRUE);
     VDP_clearSprites();
 }
@@ -217,25 +220,32 @@ static void joyEvent_ops(u16 joy,u16 changed,u16 state)
 	}
 }
 
+static void dummyJoyEvent(u16 joy, u16 changed, u16 state)
+{
+
+}
+
 void pickOpts()
 {
     currentIndex = difficulty;
     PAL_setPalette(PAL0,palette_black,DMA);
-    PAL_setPalette(PAL1,palette_black,DMA);
-    PAL_fadeInAll(mainpal.data,30,TRUE);
+	PAL_setPalette(PAL1,palette_black,DMA);
+	PAL_setPalette(PAL2,palette_black,DMA);
+	PAL_setPalette(PAL3,palette_white_text,DMA);
+    PAL_fadeIn(16,47,options_pal,30,TRUE);
     VDP_clearPlane(BG_A,TRUE);
     VDP_releaseAllSprites();
-    VDP_drawTextEx(BG_A,"Changes will only take effect upon",TILE_ATTR(PAL1,FALSE,FALSE,FALSE),2,0,DMA);
-    VDP_drawTextEx(BG_A,"starting a new game.",TILE_ATTR(PAL1,FALSE,FALSE,FALSE),2,1,DMA);
-    VDP_drawTextEx(BG_A,"Difficulty:",TILE_ATTR(PAL1,FALSE,FALSE,FALSE),OPTX_OPS,OPTY_OPS,DMA);
+    VDP_drawTextEx(BG_A,"Changes will only take effect upon",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),2,0,DMA);
+    VDP_drawTextEx(BG_A,"starting a new game.",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),2,1,DMA);
+    VDP_drawTextEx(BG_A,"Difficulty:",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),OPTX_OPS,OPTY_OPS,DMA);
     int i = 0;
     for (i; i < NUM_OPTS_OPS; i++)
     {
         Option o = menu_ops[i];
-        VDP_drawTextEx(BG_A,o.label,TILE_ATTR(PAL1,FALSE,FALSE,FALSE),o.x,o.y,DMA);
+        VDP_drawTextEx(BG_A,o.label,TILE_ATTR(PAL3,FALSE,FALSE,FALSE),o.x,o.y,DMA);
     }
-    cursor_cst = SPR_addSprite(&cursor,menu_ops[currentIndex].x*8-8,menu_ops[currentIndex].y*8,TILE_ATTR(PAL1,TRUE,FALSE,FALSE));
-    cursor_cnf = SPR_addSprite(&cursor,menu_ops[currentIndex].x*8-8,menu_ops[currentIndex].y*8,TILE_ATTR(PAL1,TRUE,FALSE,FALSE));
+    cursor_cst = SPR_addSprite(&cursor,menu_ops[currentIndex].x*8-8,menu_ops[currentIndex].y*8,TILE_ATTR(PAL3,TRUE,FALSE,FALSE));
+    cursor_cnf = SPR_addSprite(&cursor,menu_ops[currentIndex].x*8-8,menu_ops[currentIndex].y*8,TILE_ATTR(PAL3,TRUE,FALSE,FALSE));
     JOY_setEventHandler(&joyEvent_ops);
     opsCurUpd();
 }
@@ -248,6 +258,7 @@ void pickCG()
     u8 lifeAddr = SRAM_readByte(SRAM_OFFSET+2);
     u8 diffAddr = SRAM_readByte(SRAM_OFFSET+3);
     u32 scoreAddr = SRAM_readLong(SRAM_OFFSET+4);
+    u8 playerAddr = SRAM_readByte(SRAM_OFFSET+12);
     SRAM_disable();
     SYS_enableInts();
     if (lvlAddr == 0xFF)
@@ -260,4 +271,5 @@ void pickCG()
     VDP_clearPlane(BG_A,TRUE);
     VDP_clearPlane(BG_B,TRUE);
     VDP_clearSprites();
+    JOY_setEventHandler(dummyJoyEvent);
 }

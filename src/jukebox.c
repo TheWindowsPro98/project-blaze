@@ -410,15 +410,17 @@ void musPlayer()
 {
     currentIndex = 0;
     PAL_setPalette(PAL0,palette_black,DMA);
-    PAL_setPalette(PAL1,palette_black,DMA);
-    PAL_fadeInAll(mainpal.data,30,TRUE);
+	PAL_setPalette(PAL1,palette_black,DMA);
+	PAL_setPalette(PAL2,palette_black,DMA);
+	PAL_setPalette(PAL3,palette_white_text,DMA);
+    PAL_fadeIn(16,47,options_pal,30,TRUE);
     VDP_clearPlane(BG_A,TRUE);
     VDP_releaseAllSprites();
-    cursor_cst = SPR_addSprite(&cursor,menu_mus[currentIndex].x*8-12,menu_mus[currentIndex].y*8,TILE_ATTR(PAL1,TRUE,FALSE,FALSE));
+    cursor_cst = SPR_addSprite(&cursor,menu_mus[currentIndex].x*8-12,menu_mus[currentIndex].y*8,TILE_ATTR(PAL3,TRUE,FALSE,FALSE));
     for (int i; i < NUM_OPTS_MUS; i++)
     {
         Option o = menu_mus[i];
-        VDP_drawTextEx(BG_A,o.label,TILE_ATTR(PAL1,FALSE,FALSE,FALSE),o.x,o.y,DMA);
+        VDP_drawTextEx(BG_A,o.label,TILE_ATTR(PAL3,FALSE,FALSE,FALSE),o.x,o.y,DMA);
     }
     JOY_setEventHandler(joyEvent_mus);
     musCurUpd();
@@ -429,15 +431,17 @@ void sfxPlayer()
     int i = 0;
     currentIndex = 0;
     PAL_setPalette(PAL0,palette_black,DMA);
-    PAL_setPalette(PAL1,stephanie.palette->data,DMA);
-    PAL_fadeInAll(mainpal.data,30,TRUE);
+	PAL_setPalette(PAL1,palette_black,DMA);
+	PAL_setPalette(PAL2,palette_black,DMA);
+	PAL_setPalette(PAL3,palette_white_text,DMA);
+    PAL_fadeIn(16,47,options_pal,30,TRUE);
     VDP_clearPlane(BG_A, TRUE);
     VDP_releaseAllSprites();
-    cursor_cst = SPR_addSprite(&cursor,menu_sfx[currentIndex].x*8-12,menu_sfx[currentIndex].y*8,TILE_ATTR(PAL1,TRUE,FALSE,FALSE));
+    cursor_cst = SPR_addSprite(&cursor,menu_sfx[currentIndex].x*8-12,menu_sfx[currentIndex].y*8,TILE_ATTR(PAL3,TRUE,FALSE,FALSE));
     for (i; i < NUM_OPTS_SFX; i++)
     {
         Option o = menu_sfx[i];
-        VDP_drawTextEx(BG_A,o.label,TILE_ATTR(PAL1,FALSE,FALSE,FALSE),o.x,o.y,DMA);
+        VDP_drawTextEx(BG_A,o.label,TILE_ATTR(PAL3,FALSE,FALSE,FALSE),o.x,o.y,DMA);
     }
     JOY_setEventHandler(joyEvent_sfx);
     sfxCurUpd();

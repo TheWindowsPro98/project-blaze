@@ -25,6 +25,7 @@ extern bool lsul;
 extern u8 lives;
 extern u8 difficulty;
 extern u32 score;
+extern u8 player_ci;
 
 Option menu_main[NUM_OPTS_MAIN];
 Option menu_ops[NUM_OPTS_OPS];
