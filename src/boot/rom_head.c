@@ -7,14 +7,14 @@ const ROMHeader rom_header = {
 #elif (MODULE_MEGAWIFI != 0)
     "SEGA MEGAWIFI   ",
 #else
-    "SEGA GENESIS    ", // Needed, or else cart won't boot
+    "SEGA MEGA DRIVE ", // Needed, or else cart won't boot
 #endif
-    "(C)TWP98 2017-22", // Copyright date
-    "PROJECT BLAZE           MEGADRIVE BUILD 20230201", // JUE/EUR Cart Name
-    "PROJECT BLAZE           GENESIS   BUILD 20230201", // USA Cart Name
-    "GM 00000001-05", // Build Version
+    "(C)TWP  2023.FEB", // Copyright date
+    "PROJECT BLAZE           MEGADRIVE BUILD 20230202", // JAP/EUR Cart Name
+    "PROJECT BLAZE           GENESIS   BUILD 20230202", // USA Cart Name
+    "GM 62979736-05", // Build Version
     0x000,
-    "JD              ", // Joypads
+    "J6              ", // Joypads
     0x00000000,
 #if (ENABLE_BANK_SWITCH != 0)
     0x003FFFFF,
@@ -28,6 +28,6 @@ const ROMHeader rom_header = {
     0x00200000,
     0x0020FFFF,
     "            ",
-    "78 days on the clock; hit the damn gas! ", // Notes (not processed)
-    "USA             " // Country
+    "77 days on the clock; going overtime!   ", // Notes (not processed)
+    "JUE             " // Country
 };
