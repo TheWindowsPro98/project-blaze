@@ -2,8 +2,6 @@
 
 #define NUM_OPTS_MAIN 4
 #define NUM_OPTS_OPS 11
-#define OPTX_OPS 10
-#define OPTY_OPS 10
 #define OPTX_MAIN 13
 #define OPTY_MAIN 12
 #define SRAM_OFFSET     0x0000      // Can go up to $7FFF (32767 bytes)

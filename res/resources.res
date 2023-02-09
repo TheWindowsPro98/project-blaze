@@ -11,10 +11,13 @@ TILEMAP options_map "maps/options_bg.png" options_tiles BEST ALL
 # Sprites
 SPRITE stephanie "gfx/stephanie_rev0.png" 8 8 BEST 12
 SPRITE cursor "gfx/cursor.png" 1 1 BEST 0
+SPRITE bars "gfx/healthbars.png" 1 1 BEST 2
 
 # PCM
 WAV testpcm "pcm/testpcm.wav" PCM
-WAV back_sfx "pcm/back_menu.wav" PCM 
+WAV testxgm "pcm/testpcm.wav" XGM 
+WAV back_sfx "pcm/back_menu.wav" PCM
+WAV back_xgm "pcm/back_menu.wav" XGM  
 WAV barrel_brk "pcm/barrel_kd.wav" XGM
 WAV angy_yell "pcm/big_mad.wav" XGM
 WAV max_punch "pcm/cronch.wav" XGM 
@@ -28,11 +31,14 @@ WAV boom_sfx "pcm/explode.wav" XGM
 WAV fall "pcm/fall.wav" XGM 
 WAV break_gen "pcm/generic_break.wav" XGM
 WAV menu_hvr "pcm/hover.wav" PCM 
+WAV hvr_xgm "pcm/hover.wav" XGM 
 WAV itm_cons "pcm/item_collect.wav" XGM 
 WAV jump_sfx "pcm/jump.wav" XGM 
 WAV land "pcm/land.wav" XGM 
 WAV segapcm "pcm/Sega.wav" PCM 
-WAV menu_sel_sfx "pcm/select.wav" PCM  
+WAV segaxgm "pcm/Sega.wav" XGM 
+WAV menu_sel_sfx "pcm/select.wav" PCM
+WAV sel_xgm "pcm/select.wav" XGM   
 WAV stab_sfx "pcm/stab.wav" XGM 
 #-----------------------------------------
 WAV fem_die "pcm/girl_ded.wav" XGM
@@ -54,7 +60,6 @@ XGM rboss "vgm/boss.vgm"
 XGM fboss "vgm/boss2.vgm"
 XGM ending "vgm/end.vgm"
 XGM testtrck "vgm/testvgm.vgm"
-XGM punch_cmb "vgm/punches.vgm"
 #-Stage-Themes--------------------
 XGM elevator "vgm/elevator.vgm"
 XGM stg1 "vgm/city.vgm"

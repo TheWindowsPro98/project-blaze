@@ -58,6 +58,7 @@ void mainscrn()
 	while(1)
 	{
 		mapScrl -= 0.333;
+		XGM_nextFrame();
 		VDP_setHorizontalScroll(BG_B,mapScrl);
 		SPR_update();
 		SYS_doVBlankProcess();
@@ -72,7 +73,7 @@ static void title()
 	PAL_setPalette(PAL2,palette_black,DMA);
 	VDP_loadFont(custom_font.tileset,DMA);
 	VDP_drawTextEx(BG_A, "@ TWP98 2022-2023", TILE_ATTR(PAL1,FALSE,FALSE,FALSE),0,27,DMA);
-	VDP_drawTextEx(BG_A, "Project Blaze Version pa5.9",TILE_ATTR(PAL1,FALSE,FALSE,FALSE),6,12,DMA);
+	VDP_drawTextEx(BG_A, "Project Blaze Version pa5.11",TILE_ATTR(PAL1,FALSE,FALSE,FALSE),5,12,DMA);
 	VDP_drawTextEx(BG_A,"PRESS START",TILE_ATTR(PAL2,FALSE,FALSE,FALSE),14,13,DMA);
 	waitMs(500);
 	JOY_setEventHandler(&joyEvent_Title);
@@ -113,6 +114,12 @@ void sampleDefs()
 	XGM_setPCM(86,fasthit,sizeof(fasthit));
 	XGM_setPCM(87,mans_throw_enemy,sizeof(mans_throw_enemy));
 	XGM_setPCM(88,mans_throw_item,sizeof(mans_throw_item));
+	/*---------------------------------------------------*/
+	XGM_setPCM(89,testxgm,sizeof(testxgm));
+	XGM_setPCM(90,back_xgm,sizeof(back_xgm));
+	XGM_setPCM(91,hvr_xgm,sizeof(hvr_xgm));
+	XGM_setPCM(92,segaxgm,sizeof(segaxgm));
+	XGM_setPCM(93,sel_xgm,sizeof(sel_xgm));
 }
 
 int main(int resetType)
@@ -122,6 +129,10 @@ int main(int resetType)
 		SYS_hardReset();
 	}
 	SPR_init();
+	SYS_disableInts();
+	SRAM_enable();
+	SRAM_disable();
+	SYS_enableInts();
 	VRAM_createRegion(&sega_scrn, 0, 48);
 	VRAM_alloc(&sega_scrn,48);
 	PAL_setPalette(PAL0, palette_black, DMA);

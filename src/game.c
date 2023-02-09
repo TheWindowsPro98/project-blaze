@@ -37,6 +37,7 @@ void gametest()
     PAL_fadeIn(16,47,options_pal,30,TRUE);
     VDP_setTileMapEx(BG_B,&options_map,TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,stg1_vram),0,0,0,0,64,28,DMA);
     XGM_startPlay(stg1);
+    sPlayer = SPR_addSprite(&bars,16,72,TILE_ATTR(PAL3,FALSE,FALSE,FALSE));
     JOY_setEventHandler(&gameInputHdl);
     while(1)
     {
