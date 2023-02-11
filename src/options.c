@@ -1,7 +1,7 @@
 #include "includes.h"
 
 #define OPTX_OPS 11
-#define OPTY_OPS 14
+#define OPTY_OPS 13
 
 u8 currentIndex = 0;			// Currently selected menu item
 u8 round = 0x00;                // Current Level
@@ -18,8 +18,7 @@ Sprite* cursor_cst;
 Option menu_main[NUM_OPTS_MAIN] = {
 	{OPTX_MAIN, OPTY_MAIN, "New Game"},
     {OPTX_MAIN, OPTY_MAIN+1, "Continue Game"},
-	{OPTX_MAIN, OPTY_MAIN+2, "Level Select"},
-	{OPTX_MAIN, OPTY_MAIN+3, "Preferences"},
+	{OPTX_MAIN, OPTY_MAIN+2, "Preferences"},
 };
 
 Option menu_ops[NUM_OPTS_OPS] = {
@@ -33,7 +32,8 @@ Option menu_ops[NUM_OPTS_OPS] = {
     {OPTX_OPS+12, OPTY_OPS+2, "Selina"},
     {OPTX_OPS+13, OPTY_OPS+4, ""},
     {OPTX_OPS+12, OPTY_OPS+5, ""},
-    {OPTX_OPS+6, OPTY_OPS+7, "Exit"},
+    {OPTX_OPS+13, OPTY_OPS+6, ""},
+    {OPTX_OPS+6, OPTY_OPS+8, "Exit"},
 };
 
 void mainCurUpd()
@@ -82,23 +82,6 @@ void curMoveDownMain()
     }
 }
 
-static void lsChk()
-{
-    SYS_disableInts();
-    SRAM_enableRO();
-    u8 lsAddr = SRAM_readByte(SRAM_OFFSET+1);
-    SRAM_disable();
-    SYS_enableInts();
-    if (lsAddr == TRUE)
-    {
-        pickLvlSel();
-    }
-    else
-    {
-        SND_startPlay_PCM(back_sfx,sizeof(back_sfx),SOUND_RATE_11025,SOUND_PAN_CENTER,FALSE);
-    }
-}
-
 void selectOptMain(u16 Option)
 {
     switch (Option)
@@ -115,11 +98,6 @@ void selectOptMain(u16 Option)
     }
     case 2:
     {
-        lsChk();
-        break;
-    }  
-    case 3:
-    {
         pickOpts();
         break;
     }
@@ -130,6 +108,7 @@ void selectOptMain(u16 Option)
 
 void pickSG()
 {
+    round = 0;
     SYS_disableInts();
     SRAM_enable();
     SRAM_writeByte(SRAM_OFFSET, round);
@@ -152,17 +131,6 @@ void pickSG()
     VDP_clearPlane(BG_B,TRUE);
     VDP_clearSprites();
     gametest();
-}
-
-void pickLvlSel()
-{
-    PAL_setPalette(PAL0,palette_black,DMA);
-	PAL_setPalette(PAL1,palette_black,DMA);
-	PAL_setPalette(PAL2,palette_black,DMA);
-	PAL_setPalette(PAL3,palette_white_text,DMA);
-    PAL_fadeIn(16,47,options_pal,30,TRUE);
-    VDP_clearPlane(BG_A,TRUE);
-    VDP_clearSprites();
 }
 
 static void selectMusOpts()
@@ -333,6 +301,18 @@ void selectOptionOpts(u16 Option)
     }
     case 10:
     {
+        if (lsul == FALSE)
+        {
+            SND_startPlay_PCM(back_sfx,sizeof(back_sfx),SOUND_RATE_11025,SOUND_PAN_CENTER,FALSE);
+        }
+        else
+        {
+            SND_startPlay_PCM(menu_sel_sfx,sizeof(menu_sel_sfx),SOUND_RATE_11025,SOUND_PAN_CENTER,FALSE);
+        }
+        break;
+    }
+    case 11:
+    {
         mainscrn();
         break;
     }
@@ -349,11 +329,13 @@ static void joyEvent_ops(u16 joy,u16 changed,u16 state)
 {
     if (changed & state & BUTTON_UP)
 	{
+        PSG_reset();
 		SND_startPlay_PCM(&menu_hvr,sizeof(menu_hvr),SOUND_RATE_11025,SOUND_PAN_CENTER,FALSE);
 		curMoveUpOps();
 	}
 	else if (changed & state & BUTTON_DOWN)
 	{
+        PSG_reset();
 		SND_startPlay_PCM(&menu_hvr,sizeof(menu_hvr),SOUND_RATE_11025,SOUND_PAN_CENTER,FALSE);
 		curMoveDownOps();
 	}
@@ -373,9 +355,24 @@ static void joyEvent_ops(u16 joy,u16 changed,u16 state)
         }
         else if (currentIndex == 9)
         {
-            if (sndIndex < 0xFF)
+            sndIndex++;
+        }
+        else if (currentIndex == 10)
+        {
+            if (lsul == FALSE)
             {
-                sndIndex++;
+                SND_startPlay_PCM(back_sfx,sizeof(back_sfx),SOUND_RATE_11025,SOUND_PAN_CENTER,FALSE);
+            }
+            else
+            {
+                if (round < ROUND_MAX)
+                {
+                    round++;
+                }
+                else
+                {
+                    SND_startPlay_PCM(back_sfx,sizeof(back_sfx),SOUND_RATE_11025,SOUND_PAN_CENTER,FALSE);
+                }
             }
         }
     }
@@ -396,9 +393,24 @@ static void joyEvent_ops(u16 joy,u16 changed,u16 state)
         }
         else if (currentIndex == 9)
         {
-            if (sndIndex > 0)
+            sndIndex--;
+        }
+        else if (currentIndex == 10)
+        {
+            if (lsul == FALSE)
             {
-                sndIndex--;
+                SND_startPlay_PCM(back_sfx,sizeof(back_sfx),SOUND_RATE_11025,SOUND_PAN_CENTER,FALSE);
+            }
+            else
+            {
+                if (round > 0)
+                {
+                    round--;
+                }
+                else
+                {
+                    SND_startPlay_PCM(back_sfx,sizeof(back_sfx),SOUND_RATE_11025,SOUND_PAN_CENTER,FALSE);
+                }
             }
         }
     }
@@ -418,6 +430,8 @@ static void joyEvent_ops(u16 joy,u16 changed,u16 state)
     }
     if (changed & state & BUTTON_B)
     {
+        XGM_stopPlay();
+        PSG_reset();
         SND_startPlay_PCM(back_sfx,sizeof(back_sfx),SOUND_RATE_11025,SOUND_PAN_CENTER,FALSE);
         mainscrn();
     }
@@ -432,6 +446,7 @@ void pickOpts()
 {
     char livesStr[2] = "05";
     char sndStr[3] = "000";
+    char lvlStr[2] = "00";
     currentIndex = 0;
     PAL_setPalette(PAL0,palette_grey,DMA);
 	PAL_setPalette(PAL1,palette_black,DMA);
@@ -442,10 +457,24 @@ void pickOpts()
     VDP_releaseAllSprites();
     VDP_drawTextEx(BG_A,"Changes will only take effect upon",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),2,0,DMA);
     VDP_drawTextEx(BG_A,"starting a new game.",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),2,1,DMA);
-    VDP_drawTextEx(BG_A,"Difficulty:",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),OPTX_OPS,OPTY_OPS-6,DMA);
-    VDP_drawTextEx(BG_A,"Player:",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),OPTX_OPS,OPTY_OPS-1,DMA);
-    VDP_drawTextEx(BG_A,"Lives:",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),OPTX_OPS,OPTY_OPS+4,DMA);
-    VDP_drawTextEx(BG_A,"Sound Test:",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),OPTX_OPS,OPTY_OPS+5,DMA);
+    VDP_drawTextEx(BG_A,"Difficulty:",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),OPTX_OPS-1,OPTY_OPS-6,DMA);
+    VDP_drawTextEx(BG_A,"Player:",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),OPTX_OPS-1,OPTY_OPS-1,DMA);
+    VDP_drawTextEx(BG_A,"Lives:",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),OPTX_OPS-1,OPTY_OPS+4,DMA);
+    VDP_drawTextEx(BG_A,"Sound Test:",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),OPTX_OPS-1,OPTY_OPS+5,DMA);
+    SYS_disableInts();
+    SRAM_enableRO();
+    lsul = SRAM_readByte(SRAM_OFFSET+1);
+    round = SRAM_readByte(SRAM_OFFSET);
+    SRAM_disable();
+    SYS_enableInts();
+    if (lsul == FALSE)
+    {
+        VDP_drawTextEx(BG_A,"Level Select:",TILE_ATTR(PAL0,FALSE,FALSE,FALSE),OPTX_OPS-1,OPTY_OPS+6,DMA);
+    }
+    else
+    {
+        VDP_drawTextEx(BG_A,"Level Select:",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),OPTX_OPS-1,OPTY_OPS+6,DMA);
+    }
     int i = 0;
     for (i; i < NUM_OPTS_OPS; i++)
     {
@@ -466,6 +495,15 @@ void pickOpts()
         VDP_drawTextEx(BG_A,livesStr,TILE_ATTR(PAL3,FALSE,FALSE,FALSE),OPTX_OPS+13,OPTY_OPS+4,DMA);
         intToStr(sndIndex,sndStr,3);
         VDP_drawTextEx(BG_A,sndStr,TILE_ATTR(PAL3,FALSE,FALSE,FALSE),OPTX_OPS+12,OPTY_OPS+5,DMA);
+        intToStr(round,lvlStr,2);
+        if (lsul == FALSE)
+        {
+            VDP_drawTextEx(BG_A,lvlStr,TILE_ATTR(PAL0,FALSE,FALSE,FALSE),OPTX_OPS+13,OPTY_OPS+6,DMA);
+        }
+        else
+        {
+            VDP_drawTextEx(BG_A,lvlStr,TILE_ATTR(PAL3,FALSE,FALSE,FALSE),OPTX_OPS+13,OPTY_OPS+6,DMA);
+        }
     }
 }
 

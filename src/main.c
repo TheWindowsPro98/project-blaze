@@ -33,7 +33,8 @@ static void joyEvent_ms(u16 joy, u16 changed, u16 state)
 
 void mainscrn()
 {
-	double mapScrl = 0;
+	char scoreStr[6] = "000000";
+	float mapScrl = 0;
 	VRAM_createRegion(&options_vram,0,18);
 	VRAM_alloc(&options_vram, 18);
 	VDP_releaseAllSprites();
@@ -48,6 +49,20 @@ void mainscrn()
 	VDP_loadTileSet(&options_tiles,options_vram,DMA);
 	VDP_setTileMapEx(BG_B,&options_map,TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,options_vram),0,0,0,0,64,28,DMA);
 	VDP_setScrollingMode(HSCROLL_PLANE,VSCROLL_PLANE);
+	SYS_disableInts();
+	SRAM_enable();
+	if (SRAM_readByte(SRAM_OFFSET) == 0xFF)
+	{
+		SRAM_writeByte(SRAM_OFFSET,0);
+		SRAM_writeByte(SRAM_OFFSET+1,FALSE);
+		SRAM_writeLong(SRAM_OFFSET+5,0x000000);
+	}
+	score = SRAM_readLong(SRAM_OFFSET+5);
+	SRAM_disable();
+	SYS_enableInts();
+	intToStr(score,scoreStr,6);
+	VDP_drawTextEx(BG_A,"Score:",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),0,27,DMA);
+	VDP_drawTextEx(BG_A,scoreStr,TILE_ATTR(PAL3,FALSE,FALSE,FALSE),7,27,DMA);
 	JOY_setEventHandler(&joyEvent_ms);
 	mainCurUpd();
 	for (int i = 0; i < NUM_OPTS_MAIN; i++)
@@ -73,7 +88,7 @@ static void title()
 	PAL_setPalette(PAL2,palette_black,DMA);
 	VDP_loadFont(custom_font.tileset,DMA);
 	VDP_drawTextEx(BG_A, "@ TWP98 2022-2023", TILE_ATTR(PAL1,FALSE,FALSE,FALSE),0,27,DMA);
-	VDP_drawTextEx(BG_A, "Project Blaze Version pa5.11",TILE_ATTR(PAL1,FALSE,FALSE,FALSE),5,12,DMA);
+	VDP_drawTextEx(BG_A, "Project Blaze Version pa5.12",TILE_ATTR(PAL1,FALSE,FALSE,FALSE),5,12,DMA);
 	VDP_drawTextEx(BG_A,"PRESS START",TILE_ATTR(PAL2,FALSE,FALSE,FALSE),14,13,DMA);
 	waitMs(500);
 	JOY_setEventHandler(&joyEvent_Title);

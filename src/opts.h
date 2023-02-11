@@ -1,12 +1,13 @@
 #pragma once
 
-#define NUM_OPTS_MAIN 4
-#define NUM_OPTS_OPS 11
+#define NUM_OPTS_MAIN 3
+#define NUM_OPTS_OPS 12
 #define OPTX_MAIN 13
-#define OPTY_MAIN 12
+#define OPTY_MAIN 13
 #define SRAM_OFFSET     0x0000      // Can go up to $7FFF (32767 bytes)
 #define SCORE_MAX       0x0F4236    // Limits score variable to dec. 999990 because yes
 #define LIVES_MAX       0x63        // Limits lives variable to dec. 99 because yes
+#define ROUND_MAX       0x07        // Limits level variable to dec. 7 because yes
 extern Sprite* cursor_cst;
 
 typedef struct 
