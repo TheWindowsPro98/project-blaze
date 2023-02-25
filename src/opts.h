@@ -1,7 +1,7 @@
 #pragma once
 
 #define NUM_OPTS_MAIN 3
-#define NUM_OPTS_OPS 12
+#define NUM_OPTS_OPS 14
 #define OPTX_MAIN 13
 #define OPTY_MAIN 13
 #define SRAM_OFFSET     0x0000      // Can go up to $7FFF (32767 bytes)

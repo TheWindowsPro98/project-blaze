@@ -1,7 +1,11 @@
 #include "includes.h"
 
-#define OPTX_OPS 11
-#define OPTY_OPS 13
+#define OPTX_OPS   11
+#define OPTY_OPS   12
+#define LS_TXT     "Stage Select:"
+#define LIVES_OPTS 10
+#define SND_OPTS   11
+#define LS_OPTS    12
 
 u8 currentIndex = 0;			// Currently selected menu item
 u8 round = 0x00;                // Current Level
@@ -9,8 +13,8 @@ bool lsul = FALSE;              // Is level select enabled? (1 - yes, 0 - no)
 u8 lives = 0x05;
 u8 difficulty = 0x01;           // 0 = Easy, 1 = Normal, 2 = Hard, 3 = Even Harder (that's what she said)
 u32 score = 0x000000;
-u8 player_ci = 0x01;            // 0 = Lucy, 1 = Stephanie, 2 = Cynthia, 3 = Selina
-u8 sndIndex = 0x00;
+u8 player_ci = 0x01;            // 0 = Lucy, 1 = Stephanie, 2 = Cynthia, 3 = Selina, 4 = Alexia, 5 = Christina
+u8 sndIndex = 0x00;             // Sound Select Index
 Sprite* cursor_cnf;
 Sprite* cursor_plr;
 Sprite* cursor_cst;
@@ -30,10 +34,12 @@ Option menu_ops[NUM_OPTS_OPS] = {
     {OPTX_OPS+12, OPTY_OPS, "Stephanie"},
     {OPTX_OPS+12, OPTY_OPS+1, "Cynthia"},
     {OPTX_OPS+12, OPTY_OPS+2, "Selina"},
-    {OPTX_OPS+13, OPTY_OPS+4, ""},
-    {OPTX_OPS+12, OPTY_OPS+5, ""},
+	{OPTX_OPS+12, OPTY_OPS+3, "Alexia"},
+    {OPTX_OPS+12, OPTY_OPS+4, "Christina"},
     {OPTX_OPS+13, OPTY_OPS+6, ""},
-    {OPTX_OPS+6, OPTY_OPS+8, "Exit"},
+    {OPTX_OPS+12, OPTY_OPS+7, ""},
+    {OPTX_OPS+13, OPTY_OPS+8, ""},
+    {OPTX_OPS+6, OPTY_OPS+10, "Exit"},
 };
 
 void mainCurUpd()
@@ -213,7 +219,6 @@ static void selectMusOpts()
         break;
     }
     default:
-        sndIndex = 64;
         break;
     }
 }
@@ -272,11 +277,23 @@ void selectOptionOpts(u16 Option)
     }
     case 8:
     {
+        SPR_setPosition(cursor_plr,menu_ops[currentIndex].x*8-8,menu_ops[currentIndex].y*8);
+        player_ci = 4;
+        break;
+    }
+    case 9:
+    {
+        SPR_setPosition(cursor_plr,menu_ops[currentIndex].x*8-8,menu_ops[currentIndex].y*8);
+        player_ci = 5;
+        break;
+    }
+    case 10:
+    {
         SND_startPlay_PCM(menu_hvr,sizeof(menu_hvr),SOUND_RATE_11025,SOUND_PAN_CENTER,FALSE);
         lives = LIVES_MAX;
         break;
     }
-    case 9:
+    case 11:
     {
         if (sndIndex <= 63)
         {
@@ -286,20 +303,18 @@ void selectOptionOpts(u16 Option)
         }
         else
         {
-            if (sndIndex <= 93)
+            sampleDefs();
+            XGM_stopPlayPCM(SOUND_PCM_CH2);
+            XGM_startPlayPCM(sndIndex,15,SOUND_PCM_CH2);
+            if (sndIndex > 93)
             {
-                sampleDefs();
-                XGM_stopPlayPCM(SOUND_PCM_CH1);
-                XGM_startPlayPCM(sndIndex,15,SOUND_PCM_CH1);
-            }
-            else
-            {
-                sndIndex = 0;
+                XGM_stopPlayPCM(SOUND_PCM_CH2);
+                SND_startPlay_PCM(&back_sfx,sizeof(back_sfx),SOUND_RATE_11025,SOUND_PAN_CENTER,FALSE);
             }
         }
         break;
     }
-    case 10:
+    case 12:
     {
         if (lsul == FALSE)
         {
@@ -311,7 +326,7 @@ void selectOptionOpts(u16 Option)
         }
         break;
     }
-    case 11:
+    case 13:
     {
         mainscrn();
         break;
@@ -341,7 +356,7 @@ static void joyEvent_ops(u16 joy,u16 changed,u16 state)
 	}
     if (changed & state & BUTTON_RIGHT)
     {
-        if (currentIndex == 8)
+        if (currentIndex == LIVES_OPTS)
         {
             if (lives < LIVES_MAX)
             {
@@ -353,11 +368,11 @@ static void joyEvent_ops(u16 joy,u16 changed,u16 state)
                 SND_startPlay_PCM(back_sfx,sizeof(back_sfx),SOUND_RATE_11025,SOUND_PAN_CENTER,FALSE);
             }
         }
-        else if (currentIndex == 9)
+        else if (currentIndex == SND_OPTS)
         {
             sndIndex++;
         }
-        else if (currentIndex == 10)
+        else if (currentIndex == LS_OPTS)
         {
             if (lsul == FALSE)
             {
@@ -378,7 +393,7 @@ static void joyEvent_ops(u16 joy,u16 changed,u16 state)
     }
     else if (changed & state & BUTTON_LEFT)
     {
-        if (currentIndex == 8)
+        if (currentIndex == LIVES_OPTS)
         {
             if (lives > 1)
             {
@@ -391,11 +406,11 @@ static void joyEvent_ops(u16 joy,u16 changed,u16 state)
                 SND_startPlay_PCM(back_sfx,sizeof(back_sfx),SOUND_RATE_11025,SOUND_PAN_CENTER,FALSE);
             }
         }
-        else if (currentIndex == 9)
+        else if (currentIndex == SND_OPTS)
         {
             sndIndex--;
         }
-        else if (currentIndex == 10)
+        else if (currentIndex == LS_OPTS)
         {
             if (lsul == FALSE)
             {
@@ -422,7 +437,7 @@ static void joyEvent_ops(u16 joy,u16 changed,u16 state)
 	}
     else if (changed & state & BUTTON_MODE)
     {
-        if (currentIndex == 8)
+        if (currentIndex == LIVES_OPTS)
         {
             SND_startPlay_PCM(menu_hvr,sizeof(menu_hvr),SOUND_RATE_11025,SOUND_PAN_CENTER,FALSE);
             lives = 1;
@@ -434,6 +449,20 @@ static void joyEvent_ops(u16 joy,u16 changed,u16 state)
         PSG_reset();
         SND_startPlay_PCM(back_sfx,sizeof(back_sfx),SOUND_RATE_11025,SOUND_PAN_CENTER,FALSE);
         mainscrn();
+    }
+    if (changed & state & BUTTON_A)
+    {
+        if (currentIndex == SND_OPTS)
+        {
+            sndIndex = sndIndex - 10;
+        }
+    }
+    else if (changed & state & BUTTON_C)
+    {
+        if (currentIndex == SND_OPTS)
+        {
+            sndIndex = sndIndex + 10;
+        }
     }
 }
 
@@ -447,6 +476,8 @@ void pickOpts()
     char livesStr[2] = "05";
     char sndStr[3] = "000";
     char lvlStr[2] = "00";
+    u8 z80ld = 0;
+    char z80str[3] = "000";
     currentIndex = 0;
     PAL_setPalette(PAL0,palette_grey,DMA);
 	PAL_setPalette(PAL1,palette_black,DMA);
@@ -459,8 +490,10 @@ void pickOpts()
     VDP_drawTextEx(BG_A,"starting a new game.",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),2,1,DMA);
     VDP_drawTextEx(BG_A,"Difficulty:",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),OPTX_OPS-1,OPTY_OPS-6,DMA);
     VDP_drawTextEx(BG_A,"Player:",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),OPTX_OPS-1,OPTY_OPS-1,DMA);
-    VDP_drawTextEx(BG_A,"Lives:",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),OPTX_OPS-1,OPTY_OPS+4,DMA);
-    VDP_drawTextEx(BG_A,"Sound Test:",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),OPTX_OPS-1,OPTY_OPS+5,DMA);
+    VDP_drawTextEx(BG_A,"Lives:",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),OPTX_OPS-1,OPTY_OPS+6,DMA);
+    VDP_drawTextEx(BG_A,"Sound Test:",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),OPTX_OPS-1,OPTY_OPS+7,DMA);
+    VDP_drawTextEx(BG_A,"Z80 Load:",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),0,27,DMA);
+    VDP_drawTextEx(BG_A,"%",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),13,27,DMA);
     SYS_disableInts();
     SRAM_enableRO();
     lsul = SRAM_readByte(SRAM_OFFSET+1);
@@ -469,11 +502,11 @@ void pickOpts()
     SYS_enableInts();
     if (lsul == FALSE)
     {
-        VDP_drawTextEx(BG_A,"Level Select:",TILE_ATTR(PAL0,FALSE,FALSE,FALSE),OPTX_OPS-1,OPTY_OPS+6,DMA);
+        VDP_drawTextEx(BG_A,LS_TXT,TILE_ATTR(PAL0,FALSE,FALSE,FALSE),OPTX_OPS-1,OPTY_OPS+8,DMA);
     }
     else
     {
-        VDP_drawTextEx(BG_A,"Level Select:",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),OPTX_OPS-1,OPTY_OPS+6,DMA);
+        VDP_drawTextEx(BG_A,LS_TXT,TILE_ATTR(PAL3,FALSE,FALSE,FALSE),OPTX_OPS-1,OPTY_OPS+8,DMA);
     }
     int i = 0;
     for (i; i < NUM_OPTS_OPS; i++)
@@ -481,9 +514,9 @@ void pickOpts()
         Option o = menu_ops[i];
         VDP_drawTextEx(BG_A,o.label,TILE_ATTR(PAL3,FALSE,FALSE,FALSE),o.x,o.y,DMA);
     }
-    cursor_cst = SPR_addSprite(&cursor,menu_ops[currentIndex].x*8-8,menu_ops[currentIndex].y*8,TILE_ATTR(PAL0,TRUE,FALSE,FALSE));
-    cursor_cnf = SPR_addSprite(&cursor,menu_ops[difficulty].x*8-8,menu_ops[difficulty].y*8,TILE_ATTR(PAL3,FALSE,FALSE,FALSE));
-    cursor_plr = SPR_addSprite(&cursor,menu_ops[player_ci].x*8-8,menu_ops[player_ci+4].y*8,TILE_ATTR(PAL3,FALSE,FALSE,FALSE));
+    cursor_cst = SPR_addSprite(&cursor,menu_ops[currentIndex].x*8-8,menu_ops[currentIndex].y*8,TILE_ATTR(PAL3,TRUE,FALSE,FALSE));
+    cursor_cnf = SPR_addSprite(&cursor,menu_ops[difficulty].x*8-8,menu_ops[difficulty].y*8,TILE_ATTR(PAL0,FALSE,FALSE,FALSE));
+    cursor_plr = SPR_addSprite(&cursor,menu_ops[player_ci].x*8-8,menu_ops[player_ci+4].y*8,TILE_ATTR(PAL0,FALSE,FALSE,FALSE));
     JOY_setEventHandler(&joyEvent_ops);
     opsCurUpd();
     while(1)
@@ -492,18 +525,21 @@ void pickOpts()
         XGM_nextFrame();
         SYS_doVBlankProcess();
         intToStr(lives,livesStr,2);
-        VDP_drawTextEx(BG_A,livesStr,TILE_ATTR(PAL3,FALSE,FALSE,FALSE),OPTX_OPS+13,OPTY_OPS+4,DMA);
+        VDP_drawTextEx(BG_A,livesStr,TILE_ATTR(PAL3,FALSE,FALSE,FALSE),OPTX_OPS+13,OPTY_OPS+6,DMA);
         intToStr(sndIndex,sndStr,3);
-        VDP_drawTextEx(BG_A,sndStr,TILE_ATTR(PAL3,FALSE,FALSE,FALSE),OPTX_OPS+12,OPTY_OPS+5,DMA);
+        VDP_drawTextEx(BG_A,sndStr,TILE_ATTR(PAL3,FALSE,FALSE,FALSE),OPTX_OPS+12,OPTY_OPS+7,DMA);
         intToStr(round,lvlStr,2);
         if (lsul == FALSE)
         {
-            VDP_drawTextEx(BG_A,lvlStr,TILE_ATTR(PAL0,FALSE,FALSE,FALSE),OPTX_OPS+13,OPTY_OPS+6,DMA);
+            VDP_drawTextEx(BG_A,lvlStr,TILE_ATTR(PAL0,FALSE,FALSE,FALSE),OPTX_OPS+13,OPTY_OPS+8,DMA);
         }
         else
         {
-            VDP_drawTextEx(BG_A,lvlStr,TILE_ATTR(PAL3,FALSE,FALSE,FALSE),OPTX_OPS+13,OPTY_OPS+6,DMA);
+            VDP_drawTextEx(BG_A,lvlStr,TILE_ATTR(PAL3,FALSE,FALSE,FALSE),OPTX_OPS+13,OPTY_OPS+8,DMA);
         }
+        z80ld = XGM_getCPULoad();
+        intToStr(z80ld,z80str,3);
+        VDP_drawTextEx(BG_A,z80str,TILE_ATTR(PAL3,FALSE,FALSE,FALSE),10,27,DMA);
     }
 }
 

@@ -1,7 +1,6 @@
 #ifndef _RES_RESOURCES_H_
 #define _RES_RESOURCES_H_
 
-extern const u8 testpcm[39680];
 extern const u8 testxgm[50432];
 extern const u8 back_sfx[4864];
 extern const u8 back_xgm[6144];
@@ -27,7 +26,7 @@ extern const u8 segaxgm[22272];
 extern const u8 menu_sel_sfx[12544];
 extern const u8 sel_xgm[15872];
 extern const u8 stab_sfx[2560];
-extern const u8 fem_die[12032];
+extern const u8 fem_die[10240];
 extern const u8 kikoku[12032];
 extern const u8 fem_kick[4096];
 extern const u8 fem_throw[4352];
@@ -41,7 +40,7 @@ extern const u8 gameover[14336];
 extern const u8 rboss[84992];
 extern const u8 fboss[49664];
 extern const u8 ending[70656];
-extern const u8 testtrck[19200];
+extern const u8 testtrck[18944];
 extern const u8 elevator[20736];
 extern const u8 stg1[81920];
 extern const u8 stg2[87808];
@@ -50,10 +49,11 @@ extern const u8 stg4[84736];
 extern const u8 stg5[138240];
 extern const u8 stg6[127232];
 extern const u8 stg7[62976];
-extern const u8 stg8[116480];
+extern const u8 stg8[73728];
 extern const Image sega_logo;
 extern const Image custom_font;
-extern const TileSet options_tiles;
+extern const Image title_logo;
+extern const TileSet stg1_tiles;
 extern const TileMap options_map;
 extern const SpriteDefinition stephanie;
 extern const SpriteDefinition cursor;

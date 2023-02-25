@@ -1,12 +1,13 @@
 # Images
 IMAGE sega_logo "gfx/sega.png" BEST ALL
 IMAGE custom_font "gfx/font_default.png" BEST NONE 
+IMAGE title_logo "gfx/title.png" BEST ALL
 
 # Tilesets
-TILESET options_tiles "tiles/stg1.png" BEST ALL 
+TILESET stg1_tiles "tiles/stg1.png" BEST ALL 
 
 # Tilemaps
-TILEMAP options_map "maps/options_bg.png" options_tiles BEST ALL
+TILEMAP options_map "maps/options_bg.png" stg1_tiles BEST ALL
 
 # Sprites
 SPRITE stephanie "gfx/stephanie_rev0.png" 8 8 BEST 12
@@ -14,7 +15,6 @@ SPRITE cursor "gfx/cursor.png" 1 1 BEST 0
 SPRITE bars "gfx/healthbars.png" 1 1 BEST 2
 
 # PCM
-WAV testpcm "pcm/testpcm.wav" PCM
 WAV testxgm "pcm/testpcm.wav" XGM 
 WAV back_sfx "pcm/back_menu.wav" PCM
 WAV back_xgm "pcm/back_menu.wav" XGM  
