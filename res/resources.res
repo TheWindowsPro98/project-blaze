@@ -1,6 +1,7 @@
 # Images
 IMAGE sega_logo "gfx/sega.png" BEST ALL
-IMAGE custom_font "gfx/font_default.png" BEST NONE 
+IMAGE menu_font "gfx/font_menu.png" BEST NONE 
+IMAGE game_font "gfx/font_game.png" BEST NONE
 IMAGE title_logo "gfx/title.png" BEST ALL
 
 # Tilesets
@@ -70,3 +71,6 @@ XGM stg5 "vgm/bridge.vgm"
 XGM stg6 "vgm/station.vgm"
 XGM stg7 "vgm/train.vgm"
 XGM stg8 "vgm/final.vgm"
+
+# Palettes
+PALETTE options_pal "gfx/mainpal.png"

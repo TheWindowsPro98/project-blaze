@@ -32,7 +32,7 @@ void gametest()
 	PAL_setPalette(PAL1,palette_black,DMA);
 	PAL_setPalette(PAL2,palette_black,DMA);
 	PAL_setPalette(PAL3,stephanie.palette->data,DMA);
-    PAL_fadeIn(16,47,options_pal,30,TRUE);
+    PAL_fadeInAll(options_pal.data,30,TRUE);
     VDP_setTileMapEx(BG_B,&options_map,TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,ind),0,0,0,0,64,28,DMA);
     XGM_startPlay(stg1);
     sPlayer = SPR_addSprite(&stephanie,16,72,TILE_ATTR(PAL3,FALSE,FALSE,FALSE));

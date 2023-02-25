@@ -479,11 +479,7 @@ void pickOpts()
     u8 z80ld = 0;
     char z80str[3] = "000";
     currentIndex = 0;
-    PAL_setPalette(PAL0,palette_grey,DMA);
-	PAL_setPalette(PAL1,palette_black,DMA);
-	PAL_setPalette(PAL2,palette_black,DMA);
-	PAL_setPalette(PAL3,palette_white_text,DMA);
-    PAL_fadeIn(16,47,options_pal,30,TRUE);
+    fadeInPalette(options_pal.data,30,TRUE);
     VDP_clearPlane(BG_A,TRUE);
     VDP_releaseAllSprites();
     VDP_drawTextEx(BG_A,"Changes will only take effect upon",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),2,0,DMA);

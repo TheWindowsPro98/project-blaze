@@ -42,11 +42,7 @@ void mainscrn()
 	ind = VRAM_alloc(&options_vram, 18);
 	VDP_releaseAllSprites();
 	currentIndex = 0;
-	PAL_setPalette(PAL0,palette_black,DMA);
-	PAL_setPalette(PAL1,palette_black,DMA);
-	PAL_setPalette(PAL2,palette_black,DMA);
-	PAL_setPalette(PAL3,palette_white_text,DMA);
-    PAL_fadeIn(16,47,options_pal,30,TRUE);
+	fadeInPalette(options_pal.data,30,TRUE);
 	cursor_cst = SPR_addSprite(&cursor,0,0,TILE_ATTR(PAL3,TRUE,FALSE,FALSE));
 	VDP_clearPlane(BG_A,TRUE);
 	VDP_loadTileSet(&stg1_tiles,ind,DMA);
@@ -88,12 +84,12 @@ static void title()
 	PAL_setPalette(PAL1,palette_black,DMA);
 	PAL_fadeInPalette(PAL1,stephanie.palette->data,30,TRUE);
 	PAL_setPalette(PAL2,palette_black,DMA);
-	VDP_loadFont(custom_font.tileset,DMA);
+	VDP_loadFont(menu_font.tileset,DMA);
 	VRAM_createRegion(&sega_scrn,ind,440);
 	ind = VRAM_alloc(&sega_scrn,440);
 	VDP_drawImageEx(BG_A,&title_logo,TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,ind),0,0,FALSE,TRUE);
 	VDP_drawTextEx(BG_A, "@ TWP98 2022-2023", TILE_ATTR(PAL1,FALSE,FALSE,FALSE),0,27,DMA);
-	VDP_drawTextEx(BG_A, "Project Blaze Version pa5.12",TILE_ATTR(PAL1,FALSE,FALSE,FALSE),5,12,DMA);
+	VDP_drawTextEx(BG_A, "Version pa5.12",TILE_ATTR(PAL1,FALSE,FALSE,FALSE),13,12,DMA);
 	VDP_drawTextEx(BG_A,"PRESS START",TILE_ATTR(PAL1,FALSE,FALSE,FALSE),14,13,DMA);
 	waitMs(500);
 	JOY_setEventHandler(&joyEvent_Title);
@@ -134,6 +130,15 @@ void sampleDefs()
 	XGM_setPCM(91,hvr_xgm,sizeof(hvr_xgm));
 	XGM_setPCM(92,segaxgm,sizeof(segaxgm));
 	XGM_setPCM(93,sel_xgm,sizeof(sel_xgm));
+}
+
+void fadeInPalette(Palette* palette, u8 fadeTime, bool async)
+{
+	PAL_setPalette(PAL0,palette_black,DMA);
+	PAL_setPalette(PAL1,palette_black,DMA);
+	PAL_setPalette(PAL2,palette_black,DMA);
+	PAL_setPalette(PAL3,palette_black,DMA);
+	PAL_fadeInAll(palette,fadeTime,async);
 }
 
 int main(int resetType)
