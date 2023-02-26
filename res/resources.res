@@ -5,13 +5,19 @@ IMAGE game_font "gfx/font_game.png" BEST NONE
 IMAGE title_logo "gfx/title.png" BEST ALL
 
 # Tilesets
-TILESET stg1_tiles "tiles/stg1.png" BEST ALL 
+TILESET opts_tiles "tiles/options_bg.png" BEST ALL
+TILESET test_tiles "tiles/test_lvl.png" BEST ALL  
 
 # Tilemaps
-TILEMAP options_map "maps/options_bg.png" stg1_tiles BEST ALL
+TILEMAP options_map "maps/options_bg.png" opts_tiles BEST ALL
+#------------------------------------------------------------
+TILEMAP test_map_bg "maps/test_lvl/background.png" test_tiles BEST ALL
+TILEMAP test_map_fg "maps/test_lvl/foreground.png" test_tiles BEST ALL
+TILEMAP test_map_col "maps/test_lvl/collision.png" test_tiles BEST ALL
 
 # Sprites
 SPRITE stephanie "gfx/stephanie_rev0.png" 8 8 BEST 12
+SPRITE lucy "gfx/lucy_rev0.png" 6 8 BEST 12
 SPRITE cursor "gfx/cursor.png" 1 1 BEST 0
 SPRITE bars "gfx/healthbars.png" 1 1 BEST 2
 
@@ -71,6 +77,8 @@ XGM stg5 "vgm/bridge.vgm"
 XGM stg6 "vgm/station.vgm"
 XGM stg7 "vgm/train.vgm"
 XGM stg8 "vgm/final.vgm"
+XGM testtrck2 "vgm/testlvl.vgm"
 
 # Palettes
-PALETTE options_pal "gfx/mainpal.png"
+PALETTE options_pal "pals/mainpal.png"
+PALETTE test_palette "pals/test_lvl.png"

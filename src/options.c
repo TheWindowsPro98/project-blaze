@@ -115,6 +115,7 @@ void selectOptMain(u16 Option)
 void pickSG()
 {
     round = 0;
+    VDP_setHorizontalScroll(BG_B,0);
     SYS_disableInts();
     SRAM_enable();
     SRAM_writeByte(SRAM_OFFSET, round);
@@ -216,6 +217,11 @@ static void selectMusOpts()
     case 14:
     {
         XGM_startPlay(stg8);
+        break;
+    }
+    case 15:
+    {
+        XGM_startPlay(testtrck2);
         break;
     }
     default:

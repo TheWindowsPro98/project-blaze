@@ -45,7 +45,7 @@ void mainscrn()
 	fadeInPalette(options_pal.data,30,TRUE);
 	cursor_cst = SPR_addSprite(&cursor,0,0,TILE_ATTR(PAL3,TRUE,FALSE,FALSE));
 	VDP_clearPlane(BG_A,TRUE);
-	VDP_loadTileSet(&stg1_tiles,ind,DMA);
+	VDP_loadTileSet(&opts_tiles,ind,DMA);
 	VDP_setTileMapEx(BG_B,&options_map,TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,ind),0,0,0,0,64,28,DMA);
 	VDP_setScrollingMode(HSCROLL_PLANE,VSCROLL_PLANE);
 	SYS_disableInts();
