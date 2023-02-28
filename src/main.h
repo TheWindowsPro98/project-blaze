@@ -2,8 +2,8 @@
 #include "includes.h"
 
 extern VRAMRegion* options_vram;
-extern s16 ind;
+extern s16 ind[12];
 
 void mainscrn();
 void sampleDefs();
-void fadeInPalette(Palette* palette, u8 fadeTime, bool async);
+void fadeInPalette(Palette* fadePalette, Palette* staticPalette, u16 bgColor, u8 fadeTime, bool async);

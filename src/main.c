@@ -2,7 +2,7 @@
 
 VRAMRegion* sega_scrn;
 VRAMRegion* options_vram;
-s16 ind;
+s16 ind[12]; // 0 - Sega Screen, 1 - Title Logo, 2 - Main Menu Background, 3 - Hilight/Shadow Tiles, 4-11 - Stage Graphics, 12 - Ending
 
 static void joyEvent_Title(u16 joy, u16 changed, u16 state)
 {
@@ -36,17 +36,17 @@ void mainscrn()
 {
 	char scoreStr[6] = "000000";
 	float mapScrl = 0;
-	VRAM_free(&sega_scrn, ind);
+	VRAM_free(&sega_scrn, ind[1]);
 	VRAM_clearRegion(&sega_scrn);
 	VRAM_createRegion(&options_vram,TILE_USER_INDEX,18);
-	ind = VRAM_alloc(&options_vram, 18);
+	ind[2] = VRAM_alloc(&options_vram, 18);
 	VDP_releaseAllSprites();
 	currentIndex = 0;
-	fadeInPalette(options_pal.data,30,TRUE);
-	cursor_cst = SPR_addSprite(&cursor,0,0,TILE_ATTR(PAL3,TRUE,FALSE,FALSE));
+	fadeInPalette(options_pal.data,stephanie.palette->data,0x000,30,TRUE);
+	cursor_cst = SPR_addSprite(&cursor,0,0,TILE_ATTR(PAL0,TRUE,FALSE,FALSE));
 	VDP_clearPlane(BG_A,TRUE);
-	VDP_loadTileSet(&opts_tiles,ind,DMA);
-	VDP_setTileMapEx(BG_B,&options_map,TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,ind),0,0,0,0,64,28,DMA);
+	VDP_loadTileSet(&opts_tiles,ind[2],DMA);
+	VDP_setTileMapEx(BG_B,&options_map,TILE_ATTR_FULL(PAL1,FALSE,FALSE,FALSE,ind[2]),0,0,0,0,64,28,DMA);
 	VDP_setScrollingMode(HSCROLL_PLANE,VSCROLL_PLANE);
 	SYS_disableInts();
 	SRAM_enable();
@@ -60,14 +60,14 @@ void mainscrn()
 	SRAM_disable();
 	SYS_enableInts();
 	intToStr(score,scoreStr,6);
-	VDP_drawTextEx(BG_A,"Score:",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),0,27,DMA);
-	VDP_drawTextEx(BG_A,scoreStr,TILE_ATTR(PAL3,FALSE,FALSE,FALSE),7,27,DMA);
+	VDP_drawTextEx(BG_A,"Score:",TILE_ATTR(PAL0,FALSE,FALSE,FALSE),0,27,DMA);
+	VDP_drawTextEx(BG_A,scoreStr,TILE_ATTR(PAL0,FALSE,FALSE,FALSE),7,27,DMA);
 	JOY_setEventHandler(&joyEvent_ms);
 	mainCurUpd();
 	for (int i = 0; i < NUM_OPTS_MAIN; i++)
 	{
     	Option o = menu_main[i];
-    	VDP_drawTextEx(BG_A,o.label,TILE_ATTR(PAL3,TRUE,FALSE,FALSE),o.x,o.y,DMA);
+    	VDP_drawTextEx(BG_A,o.label,TILE_ATTR(PAL0,TRUE,FALSE,FALSE),o.x,o.y,DMA);
 	}
 	while(1)
 	{
@@ -81,16 +81,17 @@ void mainscrn()
 static void title()
 {
 	PAL_setPalette(PAL0,title_logo.palette->data,DMA);
+	PAL_setColor(0,0x000);
 	PAL_setPalette(PAL1,palette_black,DMA);
 	PAL_fadeInPalette(PAL1,stephanie.palette->data,30,TRUE);
 	PAL_setPalette(PAL2,palette_black,DMA);
 	VDP_loadFont(menu_font.tileset,DMA);
-	VRAM_createRegion(&sega_scrn,ind,440);
-	ind = VRAM_alloc(&sega_scrn,440);
-	VDP_drawImageEx(BG_A,&title_logo,TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,ind),0,0,FALSE,TRUE);
+	VRAM_createRegion(&sega_scrn,TILE_USER_INDEX,440);
+	ind[1] = VRAM_alloc(&sega_scrn,440);
+	VDP_drawImageEx(BG_A,&title_logo,TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,ind[1]),0,0,FALSE,TRUE);
 	VDP_drawTextEx(BG_A, "@ TWP98 2022-2023", TILE_ATTR(PAL1,FALSE,FALSE,FALSE),0,27,DMA);
-	VDP_drawTextEx(BG_A, "Version pa5.12",TILE_ATTR(PAL1,FALSE,FALSE,FALSE),13,12,DMA);
-	VDP_drawTextEx(BG_A,"PRESS START",TILE_ATTR(PAL1,FALSE,FALSE,FALSE),14,13,DMA);
+	VDP_drawTextEx(BG_A, "Version pa5.13",TILE_ATTR(PAL1,FALSE,FALSE,FALSE),12,12,DMA);
+	VDP_drawTextEx(BG_A,"PRESS  START",TILE_ATTR(PAL1,FALSE,FALSE,FALSE),13,13,DMA);
 	waitMs(500);
 	JOY_setEventHandler(&joyEvent_Title);
 }
@@ -132,13 +133,14 @@ void sampleDefs()
 	XGM_setPCM(93,sel_xgm,sizeof(sel_xgm));
 }
 
-void fadeInPalette(Palette* palette, u8 fadeTime, bool async)
+void fadeInPalette(Palette* fadePalette, Palette* staticPalette, u16 bgColor, u8 fadeTime, bool async)
 {
-	PAL_setPalette(PAL0,palette_black,DMA);
+	PAL_setPalette(PAL0,staticPalette,DMA);
+	PAL_setColor(0,bgColor); 
 	PAL_setPalette(PAL1,palette_black,DMA);
 	PAL_setPalette(PAL2,palette_black,DMA);
 	PAL_setPalette(PAL3,palette_black,DMA);
-	PAL_fadeInAll(palette,fadeTime,async);
+	PAL_fadeIn(16,63,fadePalette,fadeTime,async);
 }
 
 int main(int resetType)
@@ -146,15 +148,15 @@ int main(int resetType)
 	u8 consoleType = *(u8 *)0xA10001;
 	if (consoleType == 0xE0)
 	{
-		VDP_drawTextEx(BG_A,"This game is not optimized for PAL", TILE_ATTR(PAL0,FALSE,FALSE,FALSE),0,0,DMA);
-		VDP_drawTextEx(BG_A,"consoles.",TILE_ATTR(PAL0,FALSE,FALSE,FALSE),0,1,DMA);
+		VDP_drawTextEx(BG_A,"This game is not optimized for PAL", TILE_ATTR(PAL1,FALSE,FALSE,FALSE),0,0,DMA);
+		VDP_drawTextEx(BG_A,"consoles.",TILE_ATTR(PAL1,FALSE,FALSE,FALSE),0,1,DMA);
 	}
 	else if (consoleType == 0x60)
 	{
-		VDP_drawTextEx(BG_A,"This game is not optimized for PAL", TILE_ATTR(PAL0,FALSE,FALSE,FALSE),0,0,DMA);
-		VDP_drawTextEx(BG_A,"consoles.",TILE_ATTR(PAL0,FALSE,FALSE,FALSE),0,1,DMA);
-		VDP_drawTextEx(BG_A,"Hell, I didn't even know Japan had", TILE_ATTR(PAL0,FALSE,FALSE,FALSE),0,3,DMA);
-		VDP_drawTextEx(BG_A,"PAL consoles.",TILE_ATTR(PAL0,FALSE,FALSE,FALSE),0,4,DMA);
+		VDP_drawTextEx(BG_A,"This game is not optimized for PAL", TILE_ATTR(PAL1,FALSE,FALSE,FALSE),0,0,DMA);
+		VDP_drawTextEx(BG_A,"consoles.",TILE_ATTR(PAL1,FALSE,FALSE,FALSE),0,1,DMA);
+		VDP_drawTextEx(BG_A,"Hell, I didn't even know Japan had", TILE_ATTR(PAL1,FALSE,FALSE,FALSE),0,3,DMA);
+		VDP_drawTextEx(BG_A,"PAL consoles.",TILE_ATTR(PAL1,FALSE,FALSE,FALSE),0,4,DMA);
 	}
 	if (resetType == 0)
 	{
@@ -166,16 +168,14 @@ int main(int resetType)
 	SRAM_disable();
 	SYS_enableInts();
 	VRAM_createRegion(&sega_scrn, TILE_USER_INDEX,48);
-	ind = VRAM_alloc(&sega_scrn,48);
-	PAL_setPalette(PAL0, palette_black, DMA);
-	PAL_fadeInPalette(PAL0,sega_logo.palette->data,30,TRUE);
-	VDP_drawImageEx(BG_A, &sega_logo,TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,ind), 12, 12, FALSE, TRUE);
+	ind[0] = VRAM_alloc(&sega_scrn,48);
+	fadeInPalette(sega_logo.palette->data,palette_black,0x000,30,TRUE);
+	VDP_drawImageEx(BG_A, &sega_logo,TILE_ATTR_FULL(PAL1,FALSE,FALSE,FALSE,ind[0]), 12, 12, FALSE, TRUE);
 	SND_startPlay_PCM(&segapcm, sizeof(segapcm), SOUND_RATE_11025, SOUND_PAN_CENTER, FALSE);
 	waitMs(2408);
-	PAL_fadeOutPalette(PAL0, 30, FALSE);
-	VRAM_free(&sega_scrn,0);
+	PAL_fadeOutAll(30,FALSE);
+	VRAM_free(&sega_scrn,ind[0]);
 	VDP_clearPlane(BG_A,TRUE);
-	sampleDefs();
 	title();
 	while(1)
 	{   
