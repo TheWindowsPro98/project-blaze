@@ -76,7 +76,6 @@ XGM stg5 "vgm/bridge.vgm"
 XGM stg6 "vgm/station.vgm"
 XGM stg7 "vgm/train.vgm"
 XGM stg8 "vgm/final.vgm"
-XGM testtrck2 "vgm/testlvl.vgm"
 
 # Palettes
 PALETTE options_pal "pals/mainpal.png"

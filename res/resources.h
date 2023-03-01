@@ -50,7 +50,6 @@ extern const u8 stg5[138240];
 extern const u8 stg6[127232];
 extern const u8 stg7[62976];
 extern const u8 stg8[73728];
-extern const u8 testtrck2[64512];
 extern const Image sega_logo;
 extern const Image menu_font;
 extern const Image game_font;

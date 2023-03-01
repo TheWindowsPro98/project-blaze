@@ -219,11 +219,6 @@ static void selectMusOpts()
         XGM_startPlay(stg8);
         break;
     }
-    case 15:
-    {
-        XGM_startPlay(testtrck2);
-        break;
-    }
     default:
         break;
     }

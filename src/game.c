@@ -1,5 +1,9 @@
 #include "includes.h"
 
+#define NUM_OPTS_PAUSE 3
+#define OPTX_PAUSE 0
+#define OPTY_PAUSE 0
+
 Sprite* sPlayer;
 VRAMRegion* stg1_vram;
 VRAMRegion* stg2_vram;
@@ -9,20 +13,30 @@ VRAMRegion* stg5_vram;
 VRAMRegion* stg6_vram;
 VRAMRegion* stg7_vram;
 VRAMRegion* stg8_vram;
-u16 player_x = 16;
-u16 player_y = 144;
+s16 player_x = 16;
+s16 player_y = 144;
 u16 cam_x = 0;
 u16 cam_y = 0; 
 s8 player_spd_x = 0;
 s8 player_jump = 0;
 bool paused = FALSE;
+bool isJumping = FALSE;
+bool isGrounded = TRUE;
+
+Option menu_pause[NUM_OPTS_PAUSE] = {
+    {OPTX_PAUSE, OPTY_PAUSE, "Resume"},
+    {OPTX_PAUSE, OPTY_PAUSE+1, "Restart"},
+    {OPTX_PAUSE, OPTY_PAUSE+2, "Quit Game"},
+};
 
 static void pauseChk()
 {
+    sampleDefs();
     switch (paused)
     {
     case FALSE:
     {
+        XGM_startPlayPCM(93,0,SOUND_PCM_CH2);
         XGM_resumePlay();
         sPlayer->timer = 12;
         VDP_setHilightShadow(FALSE);
@@ -31,6 +45,7 @@ static void pauseChk()
     }
     case TRUE:
     {
+        XGM_startPlayPCM(90,0,SOUND_PCM_CH2);
         XGM_pausePlay();
         sPlayer->timer = 0;
         player_spd_x = 0;
@@ -96,7 +111,21 @@ static void spawnPlayer()
 
 static void playerJump()
 {
-    
+    sampleDefs();
+    if (isGrounded == TRUE)
+    {
+        if (isJumping == TRUE)
+        {
+            XGM_startPlayPCM(77,15,SOUND_PCM_CH2);
+            isJumping = !isJumping;
+        }
+        else
+        {
+        }
+    }
+    else
+    {
+    }
 }
 
 static void pauseInputHdl(u16 joy, u16 changed, u16 state)
@@ -129,6 +158,7 @@ static void gameInputHdl(u16 joy, u16 changed, u16 state)
     }
     if (changed & state & BUTTON_C)
     {
+        isJumping = !isJumping;
         playerJump();
     }
     if (changed & state & BUTTON_START)
@@ -143,7 +173,15 @@ static void playerPos()
 {
     SPR_setPosition(sPlayer,player_x,player_y);
     player_x = player_x + player_spd_x;
-    
+    if (player_x <= 0)
+    {
+        player_x = 0;
+        player_spd_x = 0;
+    }
+    else if (player_x >= 0x200)
+    {
+        player_x = 0;
+    }
 }
 
 void gametest()
@@ -157,7 +195,7 @@ void gametest()
     VDP_loadTileSet(&test_tiles,ind[3],DMA);
     VDP_setTileMapEx(BG_B,&test_map_bg,TILE_ATTR_FULL(PAL1,FALSE,FALSE,FALSE,ind[3]),0,0,0,0,64,28,DMA);
     VDP_setTileMapEx(BG_A,&test_map_fg,TILE_ATTR_FULL(PAL1,TRUE,FALSE,FALSE,ind[3]),0,0,0,0,64,28,DMA);
-    XGM_startPlay(testtrck2);
+    XGM_startPlay(testtrck);
     spawnPlayer();
     PAL_setColor(0,0x000);
     JOY_setEventHandler(&gameInputHdl);
