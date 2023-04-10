@@ -1,0 +1,375 @@
+{
+	"identifier": "Level_0",
+	"uniqueIdentifer": "dffd1761-c640-11ed-b05d-f9d271f46eea",
+	"x": -3120,
+	"y": 224,
+	"width": 3536,
+	"height": 432,
+	"bgColor": "#696A79",
+	"neighbourLevels": [],
+	"customFields" : {},
+	"layers": [
+		"Background.png",
+		"Foreground.png"
+	],
+	"entities": {
+		"PlayerStart": [
+			{
+				"id": "PlayerStart",
+				"iid": "1eeb62d0-c640-11ed-88f6-c991a3ea3647",
+				"layer": "Sprites",
+				"x": 40,
+				"y": 184,
+				"width": 16,
+				"height": 16,
+				"color": 12470831,
+				"customFields" : {}
+			}
+		],
+		"Signpost": [
+			{
+				"id": "Signpost",
+				"iid": "307d1ba0-c640-11ed-88f6-110915984f70",
+				"layer": "Sprites",
+				"x": 3424,
+				"y": 176,
+				"width": 48,
+				"height": 48,
+				"color": 14120515,
+				"customFields" : {}
+			}
+		],
+		"Coin": [
+			{
+				"id": "Coin",
+				"iid": "1cdaab00-c640-11ed-95ed-f91338adfcea",
+				"layer": "Sprites",
+				"x": 1056,
+				"y": 352,
+				"width": 16,
+				"height": 16,
+				"color": 15389866,
+				"customFields" : {}
+			},
+			{
+				"id": "Coin",
+				"iid": "1ecc41d0-c640-11ed-95ed-d117c96847fd",
+				"layer": "Sprites",
+				"x": 1040,
+				"y": 352,
+				"width": 16,
+				"height": 16,
+				"color": 15389866,
+				"customFields" : {}
+			},
+			{
+				"id": "Coin",
+				"iid": "1ef3ee10-c640-11ed-95ed-ff9c94ba75eb",
+				"layer": "Sprites",
+				"x": 1008,
+				"y": 352,
+				"width": 16,
+				"height": 16,
+				"color": 15389866,
+				"customFields" : {}
+			},
+			{
+				"id": "Coin",
+				"iid": "1f27cf50-c640-11ed-95ed-f3a4330643fc",
+				"layer": "Sprites",
+				"x": 992,
+				"y": 352,
+				"width": 16,
+				"height": 16,
+				"color": 15389866,
+				"customFields" : {}
+			},
+			{
+				"id": "Coin",
+				"iid": "22a53640-c640-11ed-95ed-19ff897744d6",
+				"layer": "Sprites",
+				"x": 1024,
+				"y": 352,
+				"width": 16,
+				"height": 16,
+				"color": 15389866,
+				"customFields" : {}
+			},
+			{
+				"id": "Coin",
+				"iid": "230be750-c640-11ed-95ed-65df4d14cef9",
+				"layer": "Sprites",
+				"x": 976,
+				"y": 352,
+				"width": 16,
+				"height": 16,
+				"color": 15389866,
+				"customFields" : {}
+			},
+			{
+				"id": "Coin",
+				"iid": "234fce20-c640-11ed-95ed-3b72a94f6457",
+				"layer": "Sprites",
+				"x": 960,
+				"y": 352,
+				"width": 16,
+				"height": 16,
+				"color": 15389866,
+				"customFields" : {}
+			},
+			{
+				"id": "Coin",
+				"iid": "24b9be60-c640-11ed-95ed-bb78f84ee4eb",
+				"layer": "Sprites",
+				"x": 960,
+				"y": 336,
+				"width": 16,
+				"height": 16,
+				"color": 15389866,
+				"customFields" : {}
+			},
+			{
+				"id": "Coin",
+				"iid": "24f62b20-c640-11ed-95ed-27ecd5713cf0",
+				"layer": "Sprites",
+				"x": 976,
+				"y": 336,
+				"width": 16,
+				"height": 16,
+				"color": 15389866,
+				"customFields" : {}
+			},
+			{
+				"id": "Coin",
+				"iid": "2538b260-c640-11ed-95ed-43d7cc4b0cbe",
+				"layer": "Sprites",
+				"x": 1008,
+				"y": 336,
+				"width": 16,
+				"height": 16,
+				"color": 15389866,
+				"customFields" : {}
+			},
+			{
+				"id": "Coin",
+				"iid": "258e7380-c640-11ed-95ed-23c5c0ddb907",
+				"layer": "Sprites",
+				"x": 992,
+				"y": 336,
+				"width": 16,
+				"height": 16,
+				"color": 15389866,
+				"customFields" : {}
+			},
+			{
+				"id": "Coin",
+				"iid": "25d56790-c640-11ed-95ed-9500a3eced9b",
+				"layer": "Sprites",
+				"x": 1024,
+				"y": 336,
+				"width": 16,
+				"height": 16,
+				"color": 15389866,
+				"customFields" : {}
+			},
+			{
+				"id": "Coin",
+				"iid": "26050310-c640-11ed-95ed-f1624b9e0165",
+				"layer": "Sprites",
+				"x": 1040,
+				"y": 336,
+				"width": 16,
+				"height": 16,
+				"color": 15389866,
+				"customFields" : {}
+			},
+			{
+				"id": "Coin",
+				"iid": "2638e450-c640-11ed-95ed-7379d3ff668b",
+				"layer": "Sprites",
+				"x": 1056,
+				"y": 336,
+				"width": 16,
+				"height": 16,
+				"color": 15389866,
+				"customFields" : {}
+			},
+			{
+				"id": "Coin",
+				"iid": "26ddfdf0-c640-11ed-95ed-9d363a04b6c2",
+				"layer": "Sprites",
+				"x": 1040,
+				"y": 320,
+				"width": 16,
+				"height": 16,
+				"color": 15389866,
+				"customFields" : {}
+			},
+			{
+				"id": "Coin",
+				"iid": "2710cdc0-c640-11ed-95ed-4f5263cdc63d",
+				"layer": "Sprites",
+				"x": 1008,
+				"y": 320,
+				"width": 16,
+				"height": 16,
+				"color": 15389866,
+				"customFields" : {}
+			},
+			{
+				"id": "Coin",
+				"iid": "274f8470-c640-11ed-95ed-1fe72c2ce933",
+				"layer": "Sprites",
+				"x": 1024,
+				"y": 320,
+				"width": 16,
+				"height": 16,
+				"color": 15389866,
+				"customFields" : {}
+			},
+			{
+				"id": "Coin",
+				"iid": "27995eb0-c640-11ed-95ed-8b17847282e7",
+				"layer": "Sprites",
+				"x": 992,
+				"y": 320,
+				"width": 16,
+				"height": 16,
+				"color": 15389866,
+				"customFields" : {}
+			},
+			{
+				"id": "Coin",
+				"iid": "27dc0d00-c640-11ed-95ed-4f9bd8e6343f",
+				"layer": "Sprites",
+				"x": 976,
+				"y": 320,
+				"width": 16,
+				"height": 16,
+				"color": 15389866,
+				"customFields" : {}
+			},
+			{
+				"id": "Coin",
+				"iid": "297b1700-c640-11ed-95ed-35622d667c0c",
+				"layer": "Sprites",
+				"x": 960,
+				"y": 320,
+				"width": 16,
+				"height": 16,
+				"color": 15389866,
+				"customFields" : {}
+			},
+			{
+				"id": "Coin",
+				"iid": "29ef83b0-c640-11ed-95ed-9b6761560bcd",
+				"layer": "Sprites",
+				"x": 1056,
+				"y": 320,
+				"width": 16,
+				"height": 16,
+				"color": 15389866,
+				"customFields" : {}
+			},
+			{
+				"id": "Coin",
+				"iid": "2a5faaa0-c640-11ed-95ed-9f506f6594e8",
+				"layer": "Sprites",
+				"x": 1040,
+				"y": 304,
+				"width": 16,
+				"height": 16,
+				"color": 15389866,
+				"customFields" : {}
+			},
+			{
+				"id": "Coin",
+				"iid": "2a916900-c640-11ed-95ed-95f3c83be7ee",
+				"layer": "Sprites",
+				"x": 1024,
+				"y": 304,
+				"width": 16,
+				"height": 16,
+				"color": 15389866,
+				"customFields" : {}
+			},
+			{
+				"id": "Coin",
+				"iid": "2ada7ff0-c640-11ed-95ed-37319c1b5b6d",
+				"layer": "Sprites",
+				"x": 1008,
+				"y": 304,
+				"width": 16,
+				"height": 16,
+				"color": 15389866,
+				"customFields" : {}
+			},
+			{
+				"id": "Coin",
+				"iid": "2b19f9f0-c640-11ed-95ed-393ce4238f9a",
+				"layer": "Sprites",
+				"x": 992,
+				"y": 304,
+				"width": 16,
+				"height": 16,
+				"color": 15389866,
+				"customFields" : {}
+			},
+			{
+				"id": "Coin",
+				"iid": "2b5ca840-c640-11ed-95ed-b1fc4f16f6c2",
+				"layer": "Sprites",
+				"x": 976,
+				"y": 304,
+				"width": 16,
+				"height": 16,
+				"color": 15389866,
+				"customFields" : {}
+			},
+			{
+				"id": "Coin",
+				"iid": "2bd35ee0-c640-11ed-95ed-1d3702239717",
+				"layer": "Sprites",
+				"x": 1008,
+				"y": 288,
+				"width": 16,
+				"height": 16,
+				"color": 15389866,
+				"customFields" : {}
+			},
+			{
+				"id": "Coin",
+				"iid": "2c1c4ec0-c640-11ed-95ed-a7d786e1720a",
+				"layer": "Sprites",
+				"x": 992,
+				"y": 288,
+				"width": 16,
+				"height": 16,
+				"color": 15389866,
+				"customFields" : {}
+			},
+			{
+				"id": "Coin",
+				"iid": "2c611ff0-c640-11ed-95ed-9d2c236c7f9f",
+				"layer": "Sprites",
+				"x": 1024,
+				"y": 288,
+				"width": 16,
+				"height": 16,
+				"color": 15389866,
+				"customFields" : {}
+			},
+			{
+				"id": "Coin",
+				"iid": "2fa54e70-c640-11ed-95ed-c3f82af6823e",
+				"layer": "Sprites",
+				"x": 1008,
+				"y": 272,
+				"width": 16,
+				"height": 16,
+				"color": 15389866,
+				"customFields" : {}
+			}
+		]
+	}
+}

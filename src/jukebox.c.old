@@ -1,0 +1,473 @@
+
+
+Option menu_mus[NUM_OPTS_MUS] = {
+    {OPTX_MUS, OPTY_MUS, "Test Track"},
+    {OPTX_MUS, OPTY_MUS+1, "Game Over"},
+    {OPTX_MUS, OPTY_MUS+2, "Level Clear"},
+    {OPTX_MUS, OPTY_MUS+3, "Boss"},
+    {OPTX_MUS, OPTY_MUS+4, "Final Boss"},
+    {OPTX_MUS, OPTY_MUS+5, "Ending"},
+    {OPTX_MUS, OPTY_MUS+6, "Stage 1"},
+    {OPTX_MUS, OPTY_MUS+7, "Stage 2"},
+    {OPTX_MUS, OPTY_MUS+8, "Stage 3"},
+    {OPTX_MUS, OPTY_MUS+9, "Stage 4"},
+    {OPTX_MUS, OPTY_MUS+10, "Stage 5"},
+    {OPTX_MUS, OPTY_MUS+11, "Stage 6"},
+    {OPTX_MUS, OPTY_MUS+12, "Stage 7"},
+    {OPTX_MUS, OPTY_MUS+13, "Stage 8"},
+    {OPTX_MUS, OPTY_MUS+14, "The Elevator"},
+    {OPTX_MUS, OPTY_MUS+16, "Back"},
+};
+
+Option menu_sfx[NUM_OPTS_SFX] = {
+    {OPTX_SFX, OPTY_SFX, "Test Track"},
+    {OPTX_SFX, OPTY_SFX+1, "Back (SFX)"},
+    {OPTX_SFX, OPTY_SFX+2, "Kicked Barrel"},
+    {OPTX_SFX, OPTY_SFX+3, "Abadede Yell"},
+    {OPTX_SFX, OPTY_SFX+4, "Punches"},
+    {OPTX_SFX, OPTY_SFX+5, "Eat"},
+    {OPTX_SFX, OPTY_SFX+6, "Explosion"},
+    {OPTX_SFX, OPTY_SFX+7, "Fall"},
+    {OPTX_SFX, OPTY_SFX+8, "Generic Break"},
+    {OPTX_SFX, OPTY_SFX+9, "Cursor Move"},
+    {OPTX_SFX, OPTY_SFX+10, "Item Collect"},
+    {OPTX_SFX, OPTY_SFX+11, "Jump"},
+    {OPTX_SFX, OPTY_SFX+12, "Land"},
+    {OPTX_SFX, OPTY_SFX+13, "SEEEGAAAAA"},
+    {OPTX_SFX, OPTY_SFX+14, "Select (SFX)"},
+    {OPTX_SFX, OPTY_SFX+15, "Stab"},
+    {OPTX_SFX+14, OPTY_SFX, "Die (Female)"},
+    {OPTX_SFX+14, OPTY_SFX+1, "Kikoku"},
+    {OPTX_SFX+14, OPTY_SFX+2, "Dropkick (Female)"},
+    {OPTX_SFX+14, OPTY_SFX+3, "Throw (Female)"},
+    {OPTX_SFX+14, OPTY_SFX+4, "Die (Male 1)"},
+    {OPTX_SFX+14, OPTY_SFX+5, "Die (Male 2)"},
+    {OPTX_SFX+14, OPTY_SFX+6, "Dragon Smash"}, // Insert vine boom
+    {OPTX_SFX+14, OPTY_SFX+7, "Throw Item (Male)"},
+    {OPTX_SFX+14, OPTY_SFX+8, "Throw Person (Male)"},
+    {OPTX_SFX+13, OPTY_SFX+17, "Back"},
+};
+
+static void calcXGMLoad()
+{
+    u8 CPULoad;
+    char CPUStr[3];
+    while(1)
+    {
+        CPULoad = XGM_getCPULoad();
+        intToStr(CPULoad, CPUStr, 3);
+        VDP_drawTextEx(BG_A, "Z80 Load:",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),0,27,DMA);
+        VDP_drawTextEx(BG_A,CPUStr, TILE_ATTR(PAL3,FALSE,FALSE,FALSE),9,27,DMA);
+        VDP_drawTextEx(BG_A,"\%",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),12,27,DMA);
+        SPR_update();
+        XGM_nextFrame();
+        SYS_doVBlankProcess();
+    }
+}
+
+void selectOptionMus(u16 Option)
+{
+    switch (Option)
+    {
+    case 0:
+    {
+        XGM_stopPlay();
+        PSG_reset();
+        XGM_startPlay(testtrck);
+        break;
+    }
+    case 1:
+    {
+        XGM_stopPlay();
+        PSG_reset();
+        XGM_startPlay(gameover);
+        break;
+    }
+    case 2:
+    {
+        XGM_stopPlay();
+        PSG_reset();
+        XGM_startPlay(lvlclr);
+        break;
+    }
+    case 3:
+    {
+        XGM_stopPlay();
+        PSG_reset();
+        XGM_startPlay(rboss);
+        break;
+    }
+    case 4:
+    {
+        XGM_stopPlay();
+        PSG_reset();
+        XGM_startPlay(fboss);
+        break;
+    }
+    case 5:
+    {
+        XGM_stopPlay();
+        PSG_reset();
+        XGM_startPlay(ending);
+        break;
+    }
+    case 6:
+    {
+        XGM_stopPlay();
+        PSG_reset();
+        XGM_startPlay(stg1);
+        break;
+    }
+    case 7:
+    {
+        XGM_stopPlay();
+        PSG_reset();
+        XGM_startPlay(stg2);
+        break;
+    }
+    case 8:
+    {
+        XGM_stopPlay();
+        PSG_reset();
+        XGM_startPlay(stg3);
+        break;
+    }
+    case 9:
+    {
+        XGM_stopPlay();
+        PSG_reset();
+        XGM_startPlay(stg4);
+        break;
+    }
+    case 10:
+    {
+        XGM_stopPlay();
+        PSG_reset();
+        XGM_startPlay(stg5);
+        break;
+    }
+    case 11:
+    {
+        XGM_stopPlay();
+        PSG_reset();
+        XGM_startPlay(stg6);
+        break;
+    }
+    case 12:
+    {
+        XGM_stopPlay();
+        PSG_reset();
+        XGM_startPlay(stg7);
+        break;
+    }
+    case 13:
+    {
+        XGM_stopPlay();
+        PSG_reset();
+        XGM_startPlay(stg8);
+        break;
+    }
+    case 14:
+    {
+        XGM_stopPlay();
+        PSG_reset();
+        XGM_startPlay(elevator);
+        break;
+    }
+    case 15:
+    {
+        XGM_stopPlay();
+        PSG_reset();
+        SND_startPlay_PCM(menu_sel_sfx,sizeof(menu_sel_sfx),SOUND_RATE_11025,SOUND_PAN_CENTER,FALSE);
+        pickOpts();
+        break;
+    }
+    default:
+        XGM_stopPlay();
+        PSG_reset();
+        break;
+    }
+}
+
+void selectOptionSFX(u16 Option)
+{
+    sampleDefs();
+    switch (Option)
+    {
+    case 0:
+    {
+        SND_startPlay_PCM(testpcm,sizeof(testpcm),SOUND_RATE_11025,SOUND_PAN_CENTER,FALSE);
+        break;
+    }
+    case 1:
+    {
+        SND_startPlay_PCM(back_sfx,sizeof(back_sfx),SOUND_RATE_11025,SOUND_PAN_CENTER,FALSE);
+        break;
+    }
+    case 2:
+    {
+        XGM_startPlayPCM(64,15,SOUND_PCM_CH1);
+        break;
+    }
+    case 3:
+    {
+        XGM_startPlayPCM(65,15,SOUND_PCM_CH1);
+        break;
+    }
+    case 4:
+    {
+        break;
+    }
+    case 5:
+    {
+        XGM_startPlayPCM(72,15,SOUND_PCM_CH1);
+        break;
+    }
+    case 6:
+    {
+        XGM_startPlayPCM(73,15,SOUND_PCM_CH1);
+        break;
+    }
+    case 7:
+    {
+        XGM_startPlayPCM(74,15,SOUND_PCM_CH1);
+        break;
+    }
+    case 8:
+    {
+        XGM_startPlayPCM(75,15,SOUND_PCM_CH1);
+        break;
+    }
+    case 9:
+    {
+        SND_startPlay_PCM(menu_hvr,sizeof(menu_hvr),SOUND_RATE_11025,SOUND_PAN_CENTER,FALSE);
+        break;
+    }
+    case 10:
+    {
+        XGM_startPlayPCM(76,15,SOUND_PCM_CH1);
+        break;
+    }
+    case 11:
+    {
+        XGM_startPlayPCM(77,15,SOUND_PCM_CH1);
+        break;
+    }
+    case 12:
+    {
+        XGM_startPlayPCM(78,15,SOUND_PCM_CH1);
+        break;
+    }
+    case 13:
+    {
+        SND_startPlay_PCM(segapcm,sizeof(segapcm),SOUND_RATE_11025,SOUND_PAN_CENTER,FALSE);
+        break;
+    }
+    case 14:
+    {
+        SND_startPlay_PCM(menu_sel_sfx,sizeof(menu_sel_sfx),SOUND_RATE_11025,SOUND_PAN_CENTER,FALSE);
+        break;
+    }
+    case 15:
+    {
+        XGM_startPlayPCM(79,15,SOUND_PCM_CH1);
+        break;
+    }
+    case 16:
+    {
+        XGM_startPlayPCM(80,15,SOUND_PCM_CH1);
+        break;
+    }
+    case 17:
+    {
+        XGM_startPlayPCM(81,15,SOUND_PCM_CH1);
+        break;
+    }
+    case 18:
+    {
+        XGM_startPlayPCM(82,15,SOUND_PCM_CH1);
+        break;
+    }
+    case 19:
+    {
+        XGM_startPlayPCM(83,15,SOUND_PCM_CH1);
+        break;
+    }
+    case 20:
+    {
+        XGM_startPlayPCM(84,15,SOUND_PCM_CH1);
+        break;
+    }
+    case 21:
+    {
+        XGM_startPlayPCM(85,15,SOUND_PCM_CH1);
+        break;
+    }
+    case 22:
+    {
+        XGM_startPlayPCM(86,15,SOUND_PCM_CH1);
+        break;
+    }
+    case 23:
+    {
+        XGM_startPlayPCM(87,15,SOUND_PCM_CH1);
+        break;
+    }
+    case 24:
+    {
+        XGM_startPlayPCM(88,15,SOUND_PCM_CH1);
+        break;
+    }
+    case 25:
+    {
+        XGM_stopPlayPCM(SOUND_PCM_CH1);
+        SND_startPlay_PCM(menu_sel_sfx,sizeof(menu_sel_sfx),SOUND_RATE_11025,SOUND_PAN_CENTER,FALSE);
+        pickOpts();
+        break;
+    }
+    default:
+        XGM_stopPlayPCM(SOUND_PCM_CH1);
+        SND_stopPlay_PCM();
+        break;
+    }
+}
+
+void musCurUpd()
+{
+    SPR_setPosition(cursor_cst,menu_mus[currentIndex].x*8-12,menu_mus[currentIndex].y*8);
+}
+
+void curMoveUpMus()
+{
+    if (currentIndex > 0)
+    {
+        currentIndex--;
+        musCurUpd();
+    }
+}
+
+void curMoveDownMus()
+{
+    if (currentIndex < NUM_OPTS_MUS-1)
+    {
+        currentIndex++;
+        musCurUpd();
+    }
+}
+
+void sfxCurUpd()
+{
+    SPR_setPosition(cursor_cst,menu_sfx[currentIndex].x*8-8,menu_sfx[currentIndex].y*8);
+}
+
+void curMoveUpSfx()
+{
+    if (currentIndex > 0)
+    {
+        currentIndex--;
+        sfxCurUpd();
+    }
+}
+
+void curMoveDownSfx()
+{
+    if (currentIndex < NUM_OPTS_SFX-1)
+    {
+        currentIndex++;
+        sfxCurUpd();
+    }
+}
+
+static void joyEvent_mus(u16 joy,u16 changed,u16 state)
+{
+    if (changed & state & BUTTON_UP)
+	{
+		curMoveUpMus();
+	}
+	else if (changed & state & BUTTON_DOWN)
+	{
+		curMoveDownMus();
+	}
+	if (changed & state & BUTTON_START)
+	{
+		selectOptionMus(currentIndex);
+	}
+    if (changed & state & BUTTON_B)
+    {
+        XGM_stopPlay();
+        PSG_reset();
+        SND_startPlay_PCM(back_sfx,sizeof(back_sfx),SOUND_RATE_11025,SOUND_PAN_CENTER,FALSE);
+        pickOpts();
+    }
+}
+
+static void joyEvent_sfx(u16 joy,u16 changed,u16 state)
+{
+    if (changed & state & BUTTON_UP)
+	{
+		curMoveUpSfx();
+	}
+	else if (changed & state & BUTTON_DOWN)
+	{
+		curMoveDownSfx();
+	}
+	if (changed & state & BUTTON_START)
+	{
+		selectOptionSFX(currentIndex);
+	}
+    if (changed & state & BUTTON_B)
+    {
+        SND_startPlay_PCM(back_sfx,sizeof(back_sfx),SOUND_RATE_11025,SOUND_PAN_CENTER,FALSE);
+        pickOpts();
+    }
+}
+
+void musPlayer()
+{
+    currentIndex = 0;
+    PAL_setPalette(PAL0,palette_black,DMA);
+	PAL_setPalette(PAL1,palette_black,DMA);
+	PAL_setPalette(PAL2,palette_black,DMA);
+	PAL_setPalette(PAL3,palette_white_text,DMA);
+    PAL_fadeIn(16,47,options_pal,30,TRUE);
+    VDP_clearPlane(BG_A,TRUE);
+    VDP_releaseAllSprites();
+    cursor_cst = SPR_addSprite(&cursor,menu_mus[currentIndex].x*8-12,menu_mus[currentIndex].y*8,TILE_ATTR(PAL3,TRUE,FALSE,FALSE));
+    for (int i; i < NUM_OPTS_MUS; i++)
+    {
+        Option o = menu_mus[i];
+        VDP_drawTextEx(BG_A,o.label,TILE_ATTR(PAL3,FALSE,FALSE,FALSE),o.x,o.y,DMA);
+    }
+    JOY_setEventHandler(joyEvent_mus);
+    musCurUpd();
+    calcXGMLoad();
+}
+
+void sfxPlayer()
+{
+    int i = 0;
+    currentIndex = 0;
+    PAL_setPalette(PAL0,palette_black,DMA);
+	PAL_setPalette(PAL1,palette_black,DMA);
+	PAL_setPalette(PAL2,palette_black,DMA);
+	PAL_setPalette(PAL3,palette_white_text,DMA);
+    PAL_fadeIn(16,47,options_pal,30,TRUE);
+    VDP_clearPlane(BG_A, TRUE);
+    VDP_releaseAllSprites();
+    cursor_cst = SPR_addSprite(&cursor,menu_sfx[currentIndex].x*8-12,menu_sfx[currentIndex].y*8,TILE_ATTR(PAL3,TRUE,FALSE,FALSE));
+    for (i; i < NUM_OPTS_SFX; i++)
+    {
+        Option o = menu_sfx[i];
+        VDP_drawTextEx(BG_A,o.label,TILE_ATTR(PAL3,FALSE,FALSE,FALSE),o.x,o.y,DMA);
+    }
+    JOY_setEventHandler(joyEvent_sfx);
+    calcXGMLoad();
+    sfxCurUpd();
+    while(1)
+    {
+        SYS_doVBlankProcess();
+        SPR_update();
+        XGM_nextFrame();
+
+    }
+}

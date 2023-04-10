@@ -1,0 +1,43 @@
+{
+	"identifier": "Level_0",
+	"uniqueIdentifer": "dffd1761-c640-11ed-b05d-f9d271f46eea",
+	"x": -3120,
+	"y": 224,
+	"width": 3536,
+	"height": 432,
+	"bgColor": "#696A79",
+	"neighbourLevels": [],
+	"customFields" : {},
+	"layers": [
+		"Background.png",
+		"Foreground.png"
+	],
+	"entities": {
+		"PlayerStart": [
+			{
+				"id": "PlayerStart",
+				"iid": "1eeb62d0-c640-11ed-88f6-c991a3ea3647",
+				"layer": "Sprites",
+				"x": 40,
+				"y": 184,
+				"width": 16,
+				"height": 16,
+				"color": 12470831,
+				"customFields" : {}
+			}
+		],
+		"Signpost": [
+			{
+				"id": "Signpost",
+				"iid": "307d1ba0-c640-11ed-88f6-110915984f70",
+				"layer": "Sprites",
+				"x": 3424,
+				"y": 176,
+				"width": 48,
+				"height": 48,
+				"color": 14120515,
+				"customFields" : {}
+			}
+		]
+	}
+}

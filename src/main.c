@@ -2,7 +2,8 @@
 
 VRAMRegion* sega_scrn;
 VRAMRegion* options_vram;
-s16 ind[12]; // 0 - Sega Screen, 1 - Title Logo, 2 - Main Menu Background, 3 - Hilight/Shadow Tiles, 4-11 - Stage Graphics, 12 - Ending
+u16 ind[11]; // 0 - Sega Screen, 1 - Title Logo, 2 - Main Menu Background, 3-11 - Stage Graphics
+u16 uncPal[64];
 
 static void joyEvent_Title(u16 joy, u16 changed, u16 state)
 {
@@ -35,14 +36,16 @@ static void joyEvent_ms(u16 joy, u16 changed, u16 state)
 void mainscrn()
 {
 	char scoreStr[6] = "000000";
-	float mapScrl = 0;
+	mapScrl = (float *) MEM_alloc(sizeof(float));
+	*mapScrl = 0.0f;
+	VDP_releaseAllSprites();
 	VRAM_free(&sega_scrn, ind[1]);
 	VRAM_clearRegion(&sega_scrn);
 	VRAM_createRegion(&options_vram,TILE_USER_INDEX,18);
 	ind[2] = VRAM_alloc(&options_vram, 18);
-	VDP_releaseAllSprites();
 	currentIndex = 0;
-	fadeInPalette(options_pal.data,stephanie.palette->data,0x000,30,TRUE);
+	aplib_unpack(options_pal,uncPal);
+	fadeInPalette(uncPal,stephanie.palette->data,0x000,30,TRUE);
 	cursor_cst = SPR_addSprite(&cursor,0,0,TILE_ATTR(PAL0,TRUE,FALSE,FALSE));
 	VDP_clearPlane(BG_A,TRUE);
 	VDP_loadTileSet(&opts_tiles,ind[2],DMA);
@@ -50,13 +53,13 @@ void mainscrn()
 	VDP_setScrollingMode(HSCROLL_PLANE,VSCROLL_PLANE);
 	SYS_disableInts();
 	SRAM_enable();
-	if (SRAM_readByte(SRAM_OFFSET) == 0xFF)
+	if (SRAM_readByte(0) == 0xFF)
 	{
-		SRAM_writeByte(SRAM_OFFSET,0);
-		SRAM_writeByte(SRAM_OFFSET+1,FALSE);
-		SRAM_writeLong(SRAM_OFFSET+5,0x000000);
+		SRAM_writeByte(0,round);
+		SRAM_writeByte(1,FALSE);
+		SRAM_writeLong(5,0x000000);
 	}
-	score = SRAM_readLong(SRAM_OFFSET+5);
+	score = SRAM_readLong(5);
 	SRAM_disable();
 	SYS_enableInts();
 	intToStr(score,scoreStr,6);
@@ -64,36 +67,35 @@ void mainscrn()
 	VDP_drawTextEx(BG_A,scoreStr,TILE_ATTR(PAL0,FALSE,FALSE,FALSE),7,27,DMA);
 	JOY_setEventHandler(&joyEvent_ms);
 	mainCurUpd();
-	for (int i = 0; i < NUM_OPTS_MAIN; i++)
+	for (u8 i = 0; i < mainNum; i++)
 	{
-    	Option o = menu_main[i];
-    	VDP_drawTextEx(BG_A,o.label,TILE_ATTR(PAL0,TRUE,FALSE,FALSE),o.x,o.y,DMA);
+    	Option *o;
+		o = MEM_alloc(sizeof(Option));
+		*o = menu_main[i];
+    	VDP_drawTextEx(BG_A,o->label,TILE_ATTR(PAL0,TRUE,FALSE,FALSE),o->x,o->y,DMA);
+		MEM_free(o);
 	}
 	while(1)
 	{
-		mapScrl -= 0.333;
+		*mapScrl -= 0.333f;
 		XGM_nextFrame();
-		VDP_setHorizontalScroll(BG_B,mapScrl);
+		VDP_setHorizontalScroll(BG_B,*mapScrl);
 		SPR_update();
 		SYS_doVBlankProcess();
 	}
 }
 static void title()
 {
-	PAL_setPalette(PAL0,title_logo.palette->data,DMA);
-	PAL_setColor(0,0x000);
-	PAL_setPalette(PAL1,palette_black,DMA);
-	PAL_fadeInPalette(PAL1,stephanie.palette->data,30,TRUE);
-	PAL_setPalette(PAL2,palette_black,DMA);
-	VDP_loadFont(menu_font.tileset,DMA);
+	fadeInPalette(title_logo.palette->data,stephanie.palette->data,0x000,30,TRUE);
 	VRAM_createRegion(&sega_scrn,TILE_USER_INDEX,440);
 	ind[1] = VRAM_alloc(&sega_scrn,440);
-	VDP_drawImageEx(BG_A,&title_logo,TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,ind[1]),0,0,FALSE,TRUE);
-	VDP_drawTextEx(BG_A, "@ TWP98 2022-2023", TILE_ATTR(PAL1,FALSE,FALSE,FALSE),0,27,DMA);
-	VDP_drawTextEx(BG_A, "Version pa5.13",TILE_ATTR(PAL1,FALSE,FALSE,FALSE),12,12,DMA);
-	VDP_drawTextEx(BG_A,"PRESS  START",TILE_ATTR(PAL1,FALSE,FALSE,FALSE),13,13,DMA);
+	VDP_drawImageEx(BG_A,&title_logo,TILE_ATTR_FULL(PAL1,FALSE,FALSE,FALSE,ind[1]),0,0,FALSE,TRUE);
+	VDP_drawTextEx(BG_A, "@ TWP98 2022-2023", TILE_ATTR(PAL3,FALSE,FALSE,FALSE),0,27,DMA);
+	VDP_drawTextEx(BG_A, "Version pa5.14",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),12,12,DMA);
+	VDP_drawTextEx(BG_A,"PRESS  START",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),13,13,DMA);
 	waitMs(500);
 	JOY_setEventHandler(&joyEvent_Title);
+	XGM_startPlay(titlevgm);
 }
 
 void sampleDefs()
@@ -143,35 +145,42 @@ void fadeInPalette(Palette* fadePalette, Palette* staticPalette, u16 bgColor, u8
 	PAL_fadeIn(16,63,fadePalette,fadeTime,async);
 }
 
-int main(int resetType)
+int main(const bool resetType)
 {
-	u8 consoleType = *(u8 *)0xA10001;
+	const u8 consoleType = *(u8 *)0xA10001;
+	char ctStrs[4][35];
+	sprintf(ctStrs[0],"This game is not optimized for PAL");
+	sprintf(ctStrs[1],"consoles.");
+	sprintf(ctStrs[2],"Hell, I didn't even know Japan had");
+	sprintf(ctStrs[3],"PAL consoles.");
 	if (consoleType == 0xE0)
 	{
-		VDP_drawTextEx(BG_A,"This game is not optimized for PAL", TILE_ATTR(PAL1,FALSE,FALSE,FALSE),0,0,DMA);
-		VDP_drawTextEx(BG_A,"consoles.",TILE_ATTR(PAL1,FALSE,FALSE,FALSE),0,1,DMA);
+		VDP_drawTextEx(BG_A,ctStrs[0],TILE_ATTR(PAL2,FALSE,FALSE,FALSE),0,0,DMA);
+		VDP_drawTextEx(BG_A,ctStrs[1],TILE_ATTR(PAL2,FALSE,FALSE,FALSE),0,1,DMA);
 	}
 	else if (consoleType == 0x60)
 	{
-		VDP_drawTextEx(BG_A,"This game is not optimized for PAL", TILE_ATTR(PAL1,FALSE,FALSE,FALSE),0,0,DMA);
-		VDP_drawTextEx(BG_A,"consoles.",TILE_ATTR(PAL1,FALSE,FALSE,FALSE),0,1,DMA);
-		VDP_drawTextEx(BG_A,"Hell, I didn't even know Japan had", TILE_ATTR(PAL1,FALSE,FALSE,FALSE),0,3,DMA);
-		VDP_drawTextEx(BG_A,"PAL consoles.",TILE_ATTR(PAL1,FALSE,FALSE,FALSE),0,4,DMA);
+		VDP_drawTextEx(BG_A,ctStrs[0],TILE_ATTR(PAL2,FALSE,FALSE,FALSE),0,0,DMA);
+		VDP_drawTextEx(BG_A,ctStrs[1],TILE_ATTR(PAL2,FALSE,FALSE,FALSE),0,1,DMA);
+		VDP_drawTextEx(BG_A,ctStrs[2],TILE_ATTR(PAL2,FALSE,FALSE,FALSE),0,3,DMA);
+		VDP_drawTextEx(BG_A,ctStrs[3],TILE_ATTR(PAL2,FALSE,FALSE,FALSE),0,4,DMA);
 	}
 	if (resetType == 0)
 	{
 		SYS_hardReset();
 	}
+	for (u8 i = 0; i <= 3; i++)
+	{
+		PAL_setPalette(i,palette_black,DMA);
+	}
+	VDP_loadFont(custom_font.tileset,DMA);
 	SPR_init();
-	SYS_disableInts();
-	SRAM_enable();
-	SRAM_disable();
-	SYS_enableInts();
 	VRAM_createRegion(&sega_scrn, TILE_USER_INDEX,48);
 	ind[0] = VRAM_alloc(&sega_scrn,48);
 	fadeInPalette(sega_logo.palette->data,palette_black,0x000,30,TRUE);
 	VDP_drawImageEx(BG_A, &sega_logo,TILE_ATTR_FULL(PAL1,FALSE,FALSE,FALSE,ind[0]), 12, 12, FALSE, TRUE);
-	SND_startPlay_PCM(&segapcm, sizeof(segapcm), SOUND_RATE_11025, SOUND_PAN_CENTER, FALSE);
+	XGM_setPCM(64,segaxgm,sizeof(segaxgm));
+	XGM_startPlayPCM(64,15,SOUND_PCM_CH1);
 	waitMs(2408);
 	PAL_fadeOutAll(30,FALSE);
 	VRAM_free(&sega_scrn,ind[0]);
@@ -180,6 +189,7 @@ int main(int resetType)
 	while(1)
 	{   
 		SYS_doVBlankProcess();
+		JOY_reset();
 	}
 	return 0;
 }

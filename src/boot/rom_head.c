@@ -9,11 +9,11 @@ const ROMHeader rom_header = {
 #else
     "SEGA GENESIS    ", // Needed, or else cart won't boot
 #endif
-    "(C)TWP  2023.FEB", // Copyright date
-    "PROJECT BLAZE           MEGADRIVE BUILD 20230228", // JAP/EUR Cart Name
-    "PROJECT BLAZE           GENESIS   BUILD 20230228", // USA Cart Name
+    "(C)TWP  2023.APR", // Copyright date
+    "PROJECT BLAZE           MEGADRIVE BUILD 20230408", // JAP/EUR Cart Name
+    "PROJECT BLAZE           GENESIS   BUILD 20230408", // USA Cart Name
     "GM 62979736-05", // Build Version
-    0x000,
+    0x0000,
     "J6              ", // Joypads
     0x00000000,
 #if (ENABLE_BANK_SWITCH != 0)
@@ -28,6 +28,6 @@ const ROMHeader rom_header = {
     0x00200000,
     0x0020FFFF,
     "            ",
-    "51 days on the clock; birthday no exist ", // Notes (not processed)
+    "29 days on the clock; smb3-1            ", // Notes (not processed)
     "JU              " // Country
 };

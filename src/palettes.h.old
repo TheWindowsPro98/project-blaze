@@ -1,0 +1,4 @@
+#pragma once
+#include "includes.h"
+
+extern const u16 options_pal[32];

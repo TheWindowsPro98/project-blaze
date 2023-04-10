@@ -2,7 +2,8 @@
 #include "includes.h"
 
 extern VRAMRegion* options_vram;
-extern s16 ind[12];
+extern u16 ind[11];
+extern u16 uncPal[64];
 
 void mainscrn();
 void sampleDefs();

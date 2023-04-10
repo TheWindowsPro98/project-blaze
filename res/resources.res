@@ -1,8 +1,8 @@
 # Images
 IMAGE sega_logo "gfx/sega.png" BEST ALL
-IMAGE menu_font "gfx/font_menu.png" BEST NONE 
-IMAGE game_font "gfx/font_game.png" BEST NONE
+IMAGE custom_font "gfx/font_menu.png" BEST NONE 
 IMAGE title_logo "gfx/title.png" BEST ALL
+IMAGE bsod_frown "gfx/frown.png" BEST ALL
 
 # Tilesets
 TILESET opts_tiles "tiles/options_bg.png" BEST ALL
@@ -11,14 +11,16 @@ TILESET test_tiles "tiles/test_lvl.png" BEST ALL
 # Tilemaps
 TILEMAP options_map "maps/options_bg.png" opts_tiles BEST ALL
 #------------------------------------------------------------
-TILEMAP test_map_bg "maps/test_lvl/background.png" test_tiles BEST ALL
-TILEMAP test_map_fg "maps/test_lvl/foreground.png" test_tiles BEST ALL
+
 
 # Sprites
 SPRITE stephanie "gfx/stephanie_rev0.png" 8 8 BEST 12
 SPRITE lucy "gfx/lucy_rev0.png" 6 8 BEST 12
 SPRITE cursor "gfx/cursor.png" 1 1 BEST 0
-SPRITE bars "gfx/healthbars.png" 1 1 BEST 2
+SPRITE bars "gfx/healthbars.png" 1 1 BEST 0
+SPRITE plr_icns "gfx/player-icons.png" 2 2 BEST 0
+SPRITE signpost "gfx/signpost.png" 6 6 BEST 2
+SPRITE coin "gfx/coin.png" 2 2 BEST 6
 
 # PCM
 WAV testxgm "pcm/testpcm.wav" XGM 
@@ -41,7 +43,6 @@ WAV hvr_xgm "pcm/hover.wav" XGM
 WAV itm_cons "pcm/item_collect.wav" XGM 
 WAV jump_sfx "pcm/jump.wav" XGM 
 WAV land "pcm/land.wav" XGM 
-WAV segapcm "pcm/Sega.wav" PCM 
 WAV segaxgm "pcm/Sega.wav" XGM 
 WAV menu_sel_sfx "pcm/select.wav" PCM
 WAV sel_xgm "pcm/select.wav" XGM   
@@ -66,6 +67,8 @@ XGM rboss "vgm/boss.vgm"
 XGM fboss "vgm/boss2.vgm"
 XGM ending "vgm/end.vgm"
 XGM testtrck "vgm/testvgm.vgm"
+XGM testtrck2 "vgm/test2.vgm"
+XGM titlevgm "vgm/title.vgm"
 #-Stage-Themes--------------------
 XGM elevator "vgm/elevator.vgm"
 XGM stg1 "vgm/city.vgm"
@@ -78,5 +81,9 @@ XGM stg7 "vgm/train.vgm"
 XGM stg8 "vgm/final.vgm"
 
 # Palettes
-PALETTE options_pal "pals/mainpal.png"
-PALETTE test_palette "pals/test_lvl.png"
+BIN options_pal "pals/main_menu.bin" 2 2 0 APLIB FALSE
+BIN test_palette "pals/test_lvl.bin" 2 2 0 APLIB FALSE
+BIN bsod_palette "pals/bsod.bin" 2 2 0 APLIB FALSE
+
+# Raw binary data
+BIN playerNames "bin/playerNames.bin" 2 2 0 APLIB FALSE

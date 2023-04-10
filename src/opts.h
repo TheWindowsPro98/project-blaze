@@ -1,14 +1,8 @@
 #pragma once
 
-#define NUM_OPTS_MAIN 3
-#define NUM_OPTS_OPS 14
-#define OPTX_MAIN 13
-#define OPTY_MAIN 13
-#define SRAM_OFFSET     0x0000      // Can go up to $7FFF (32767 bytes)
-#define SCORE_MAX       0x0F4236    // Limits score variable to dec. 999990 because yes
-#define LIVES_MAX       0x63        // Limits lives variable to dec. 99 because yes
-#define ROUND_MAX       0x07        // Limits level variable to dec. 7 because yes
 extern Sprite* cursor_cst;
+enum numOpts {optNum = 14, mainNum = 3};
+enum maxVals {scoreMax = 999990, livesMax = 99, lvlMax = 7};
 
 typedef struct 
 {
@@ -24,9 +18,9 @@ extern u8 lives;
 extern u8 difficulty;
 extern u32 score;
 extern u8 player_ci;
+extern float* mapScrl;
 
-Option menu_main[NUM_OPTS_MAIN];
-Option menu_ops[NUM_OPTS_OPS];
+Option menu_main[mainNum];
 void mainCurUpd();
 void curMoveUpMain();
 void curMoveDownMain();
@@ -35,4 +29,5 @@ void pickSG();
 void pickLvlSel();
 void pickOpts();
 void pickCG();
+void clearMenuSprites();
 static void joyEvent_ops(u16 joy,u16 changed,u16 state);

@@ -1,45 +1,43 @@
 #include "includes.h"
 
-#define OPTX_OPS   11
-#define OPTY_OPS   12
-#define LS_TXT     "Stage Select:"
-#define LIVES_OPTS 10
-#define SND_OPTS   11
-#define LS_OPTS    12
+enum xposes {optX = 23, mainX = 13};
+enum yposes {optY = 12, mainY = 13};
+enum specialOpts {livesOpts = 10, sndOpts, lsOpts};
 
 u8 currentIndex = 0;			// Currently selected menu item
-u8 round = 0x00;                // Current Level
+u8 round = 0x08;                // Current Level
 bool lsul = FALSE;              // Is level select enabled? (1 - yes, 0 - no)
 u8 lives = 0x05;
 u8 difficulty = 0x01;           // 0 = Easy, 1 = Normal, 2 = Hard, 3 = Even Harder (that's what she said)
 u32 score = 0x000000;
-u8 player_ci = 0x01;            // 0 = Lucy, 1 = Stephanie, 2 = Cynthia, 3 = Selina, 4 = Alexia, 5 = Christina
-u8 sndIndex = 0x00;             // Sound Select Index
-Sprite* cursor_cnf;
-Sprite* cursor_plr;
+u8 player_ci = 0x03;            // 0 = Jade, 1 = Stephanie, 2 = Cynthia, 3 = Selina, 4 = Alexia, 5 = Christina
+static u8 sndIndex = 0x00;      // Sound Select Index
+static Sprite* cursor_cnf;
+static Sprite* cursor_plr;
+float* mapScrl;
 Sprite* cursor_cst;
 
-Option menu_main[NUM_OPTS_MAIN] = {
-	{OPTX_MAIN, OPTY_MAIN, "New Game"},
-    {OPTX_MAIN, OPTY_MAIN+1, "Continue Game"},
-	{OPTX_MAIN, OPTY_MAIN+2, "Preferences"},
+Option menu_main[mainNum] = {
+	{mainX, mainY, "New Game"},
+    {mainX, mainY+1, "Continue Game"},
+	{mainX, mainY+2, "Preferences"},
 };
 
-Option menu_ops[NUM_OPTS_OPS] = {
-    {OPTX_OPS+12, OPTY_OPS-6, "Easy"},
-    {OPTX_OPS+12, OPTY_OPS-5, "Normal"},
-    {OPTX_OPS+12, OPTY_OPS-4, "Hard"},
-    {OPTX_OPS+12, OPTY_OPS-3, "Harder"}, // That's still what she said
-    {OPTX_OPS+12, OPTY_OPS-1, "Lucy"},
-    {OPTX_OPS+12, OPTY_OPS, "Stephanie"},
-    {OPTX_OPS+12, OPTY_OPS+1, "Cynthia"},
-    {OPTX_OPS+12, OPTY_OPS+2, "Selina"},
-	{OPTX_OPS+12, OPTY_OPS+3, "Alexia"},
-    {OPTX_OPS+12, OPTY_OPS+4, "Christina"},
-    {OPTX_OPS+13, OPTY_OPS+6, ""},
-    {OPTX_OPS+12, OPTY_OPS+7, ""},
-    {OPTX_OPS+13, OPTY_OPS+8, ""},
-    {OPTX_OPS+6, OPTY_OPS+10, "Exit"},
+static const Option menu_ops[optNum] = {
+    {optX, optY-6, "Easy"},
+    {optX, optY-5, "Normal"},
+    {optX, optY-4, "Hard"},
+    {optX, optY-3, "Harder"}, // That's still what she said
+    {optX, optY-1, "Jade"},
+    {optX, optY, "Stephanie"},
+    {optX, optY+1, "Cynthia"},
+    {optX, optY+2, "Selina"},
+	{optX, optY+3, "Alexia"},
+    {optX, optY+4, "Christina"},
+    {optX+1, optY+6, ""},
+    {optX, optY+7, ""},
+    {optX+1, optY+8, ""},
+    {optX-6, optY+10, "Exit"},
 };
 
 void mainCurUpd()
@@ -59,13 +57,23 @@ void curMoveUpOps()
         currentIndex--;
         opsCurUpd();
     }
+    else if (currentIndex == 0)
+    {
+        currentIndex = optNum-1;
+        opsCurUpd();
+    }
 }
 
 void curMoveDownOps()
 {
-    if (currentIndex < NUM_OPTS_OPS-1)
+    if (currentIndex < optNum-1)
     {
         currentIndex++;
+        opsCurUpd();
+    }
+    else if (currentIndex == optNum-1)
+    {
+        currentIndex = 0;
         opsCurUpd();
     }
 }
@@ -77,13 +85,23 @@ void curMoveUpMain()
         currentIndex--;
         mainCurUpd();
     }
+    else if (currentIndex == 0)
+    {
+        currentIndex = mainNum-1;
+        mainCurUpd();
+    }
 }
 
 void curMoveDownMain()
 {
-    if(currentIndex < NUM_OPTS_MAIN-1)
+    if(currentIndex < mainNum-1)
     {
         currentIndex++;
+        mainCurUpd();
+    }
+    else if (currentIndex == mainNum-1)
+    {
+        currentIndex = 0;
         mainCurUpd();
     }
 }
@@ -114,21 +132,20 @@ void selectOptMain(u16 Option)
 
 void pickSG()
 {
-    round = 0;
     VDP_setHorizontalScroll(BG_B,0);
     SYS_disableInts();
     SRAM_enable();
-    SRAM_writeByte(SRAM_OFFSET, round);
-    u8 lsAddr = SRAM_readByte(SRAM_OFFSET+1);
+    SRAM_writeByte(0, round);
+    u8 lsAddr = SRAM_readByte(1);
     if (lsAddr != 1)
     {
-        SRAM_writeByte(SRAM_OFFSET+1,lsul);
+        SRAM_writeByte(+1,lsul);
     }
     score = 0x000000;
-    SRAM_writeByte(SRAM_OFFSET+2, lives);
-    SRAM_writeByte(SRAM_OFFSET+3, difficulty);
-    SRAM_writeByte(SRAM_OFFSET+4, player_ci);
-    SRAM_writeLong(SRAM_OFFSET+5, score);
+    SRAM_writeByte(2, lives);
+    SRAM_writeByte(3, difficulty);
+    SRAM_writeByte(4, player_ci);
+    SRAM_writeLong(5, score);
     SRAM_disable();
     SYS_enableInts();
     waitMs(1131);
@@ -137,6 +154,7 @@ void pickSG()
     VDP_clearPlane(BG_A,TRUE);
     VDP_clearPlane(BG_B,TRUE);
     VDP_clearSprites();
+    MEM_free(mapScrl);
     gametest();
 }
 
@@ -219,6 +237,23 @@ static void selectMusOpts()
         XGM_startPlay(stg8);
         break;
     }
+    case 15:
+    {
+        XGM_startPlay(testtrck2);
+        break;
+    }
+    case 16:
+    {
+        XGM_startPlay(titlevgm);
+        break;
+    }
+    case 63:
+    {
+        XGM_setPCM(64,fem_die,sizeof(fem_die));
+        XGM_startPlayPCM(64,15,SOUND_PCM_CH1);
+        player_ci = 0xFF;
+        break;
+    }
     default:
         break;
     }
@@ -226,6 +261,7 @@ static void selectMusOpts()
 
 void selectOptionOpts(u16 Option)
 {
+    const u8 pcmMax = 93;
     switch (Option)
     {
     case 0:
@@ -291,7 +327,7 @@ void selectOptionOpts(u16 Option)
     case 10:
     {
         SND_startPlay_PCM(menu_hvr,sizeof(menu_hvr),SOUND_RATE_11025,SOUND_PAN_CENTER,FALSE);
-        lives = LIVES_MAX;
+        lives = livesMax;
         break;
     }
     case 11:
@@ -307,7 +343,7 @@ void selectOptionOpts(u16 Option)
             sampleDefs();
             XGM_stopPlayPCM(SOUND_PCM_CH2);
             XGM_startPlayPCM(sndIndex,15,SOUND_PCM_CH2);
-            if (sndIndex > 93)
+            if (sndIndex > pcmMax)
             {
                 XGM_stopPlayPCM(SOUND_PCM_CH2);
                 SND_startPlay_PCM(&back_sfx,sizeof(back_sfx),SOUND_RATE_11025,SOUND_PAN_CENTER,FALSE);
@@ -357,9 +393,9 @@ static void joyEvent_ops(u16 joy,u16 changed,u16 state)
 	}
     if (changed & state & BUTTON_RIGHT)
     {
-        if (currentIndex == LIVES_OPTS)
+        if (currentIndex == livesOpts)
         {
-            if (lives < LIVES_MAX)
+            if (lives < livesMax)
             {
                 SND_startPlay_PCM(menu_hvr,sizeof(menu_hvr),SOUND_RATE_11025,SOUND_PAN_CENTER,FALSE);
                 lives++;
@@ -369,11 +405,11 @@ static void joyEvent_ops(u16 joy,u16 changed,u16 state)
                 SND_startPlay_PCM(back_sfx,sizeof(back_sfx),SOUND_RATE_11025,SOUND_PAN_CENTER,FALSE);
             }
         }
-        else if (currentIndex == SND_OPTS)
+        else if (currentIndex == sndOpts)
         {
             sndIndex++;
         }
-        else if (currentIndex == LS_OPTS)
+        else if (currentIndex == lsOpts)
         {
             if (lsul == FALSE)
             {
@@ -381,7 +417,7 @@ static void joyEvent_ops(u16 joy,u16 changed,u16 state)
             }
             else
             {
-                if (round < ROUND_MAX)
+                if (round < lvlMax)
                 {
                     SND_startPlay_PCM(menu_hvr,sizeof(menu_hvr),SOUND_RATE_11025,SOUND_PAN_CENTER,FALSE);
                     round++;
@@ -395,7 +431,7 @@ static void joyEvent_ops(u16 joy,u16 changed,u16 state)
     }
     else if (changed & state & BUTTON_LEFT)
     {
-        if (currentIndex == LIVES_OPTS)
+        if (currentIndex == livesOpts)
         {
             if (lives > 1)
             {
@@ -408,11 +444,11 @@ static void joyEvent_ops(u16 joy,u16 changed,u16 state)
                 SND_startPlay_PCM(back_sfx,sizeof(back_sfx),SOUND_RATE_11025,SOUND_PAN_CENTER,FALSE);
             }
         }
-        else if (currentIndex == SND_OPTS)
+        else if (currentIndex == sndOpts)
         {
             sndIndex--;
         }
-        else if (currentIndex == LS_OPTS)
+        else if (currentIndex == lsOpts)
         {
             if (lsul == FALSE)
             {
@@ -440,7 +476,7 @@ static void joyEvent_ops(u16 joy,u16 changed,u16 state)
 	}
     else if (changed & state & BUTTON_MODE)
     {
-        if (currentIndex == LIVES_OPTS)
+        if (currentIndex == livesOpts)
         {
             SND_startPlay_PCM(menu_hvr,sizeof(menu_hvr),SOUND_RATE_11025,SOUND_PAN_CENTER,FALSE);
             lives = 1;
@@ -455,14 +491,14 @@ static void joyEvent_ops(u16 joy,u16 changed,u16 state)
     }
     if (changed & state & BUTTON_A)
     {
-        if (currentIndex == SND_OPTS)
+        if (currentIndex == sndOpts)
         {
             sndIndex = sndIndex - 10;
         }
     }
     else if (changed & state & BUTTON_C)
     {
-        if (currentIndex == SND_OPTS)
+        if (currentIndex == sndOpts)
         {
             sndIndex = sndIndex + 10;
         }
@@ -480,6 +516,7 @@ static void dummyJoyEvent(u16 joy, u16 changed, u16 state)
 
 void pickOpts()
 {
+    const char lsTxt[14] = "Stage Select:";
     char livesStr[2] = "05";
     char sndStr[3] = "000";
     char lvlStr[2] = "00";
@@ -487,35 +524,38 @@ void pickOpts()
     char z80str[3] = "000";
     currentIndex = 0;
     VDP_clearPlane(BG_A,TRUE);
-    fadeInPalette(options_pal.data,stephanie.palette->data,0x000,30,TRUE);
     VDP_releaseAllSprites();
+    aplib_unpack(options_pal,uncPal);
+    fadeInPalette(uncPal,stephanie.palette->data,0x000,30,TRUE);
     VDP_drawTextEx(BG_A,"Changes will only take effect upon",TILE_ATTR(PAL0,FALSE,FALSE,FALSE),2,0,DMA);
     VDP_drawTextEx(BG_A,"starting a new game.",TILE_ATTR(PAL0,FALSE,FALSE,FALSE),2,1,DMA);
-    VDP_drawTextEx(BG_A,"Difficulty:",TILE_ATTR(PAL0,FALSE,FALSE,FALSE),OPTX_OPS-1,OPTY_OPS-6,DMA);
-    VDP_drawTextEx(BG_A,"Player:",TILE_ATTR(PAL0,FALSE,FALSE,FALSE),OPTX_OPS-1,OPTY_OPS-1,DMA);
-    VDP_drawTextEx(BG_A,"Lives:",TILE_ATTR(PAL0,FALSE,FALSE,FALSE),OPTX_OPS-1,OPTY_OPS+6,DMA);
-    VDP_drawTextEx(BG_A,"Sound Test:",TILE_ATTR(PAL0,FALSE,FALSE,FALSE),OPTX_OPS-1,OPTY_OPS+7,DMA);
+    VDP_drawTextEx(BG_A,"Difficulty:",TILE_ATTR(PAL0,FALSE,FALSE,FALSE),optX-13,optY-6,DMA);
+    VDP_drawTextEx(BG_A,"Player:",TILE_ATTR(PAL0,FALSE,FALSE,FALSE),optX-13,optY-1,DMA);
+    VDP_drawTextEx(BG_A,"Lives:",TILE_ATTR(PAL0,FALSE,FALSE,FALSE),optX-13,optY+6,DMA);
+    VDP_drawTextEx(BG_A,"Sound Test:",TILE_ATTR(PAL0,FALSE,FALSE,FALSE),optX-13,optY+7,DMA);
     VDP_drawTextEx(BG_A,"Z80 Load:",TILE_ATTR(PAL0,FALSE,FALSE,FALSE),0,27,DMA);
     VDP_drawTextEx(BG_A,"%",TILE_ATTR(PAL0,FALSE,FALSE,FALSE),13,27,DMA);
     SYS_disableInts();
     SRAM_enableRO();
-    lsul = SRAM_readByte(SRAM_OFFSET+1);
-    round = SRAM_readByte(SRAM_OFFSET);
+    lsul = SRAM_readByte(1);
+    round = SRAM_readByte(0);
     SRAM_disable();
     SYS_enableInts();
     if (lsul == FALSE)
     {
-        VDP_drawTextEx(BG_A,LS_TXT,TILE_ATTR(PAL1,FALSE,FALSE,FALSE),OPTX_OPS-1,OPTY_OPS+8,DMA);
+        VDP_drawTextEx(BG_A,lsTxt,TILE_ATTR(PAL1,FALSE,FALSE,FALSE),optX-13,optY+8,DMA);
     }
     else
     {
-        VDP_drawTextEx(BG_A,LS_TXT,TILE_ATTR(PAL0,FALSE,FALSE,FALSE),OPTX_OPS-1,OPTY_OPS+8,DMA);
+        VDP_drawTextEx(BG_A,lsTxt,TILE_ATTR(PAL0,FALSE,FALSE,FALSE),optX-13,optY+8,DMA);
     }
-    int i = 0;
-    for (i; i < NUM_OPTS_OPS; i++)
+    for (u8 i = 0; i < optNum; i++)
     {
-        Option o = menu_ops[i];
-        VDP_drawTextEx(BG_A,o.label,TILE_ATTR(PAL0,FALSE,FALSE,FALSE),o.x,o.y,DMA);
+        Option *o;
+        o = MEM_alloc(sizeof(Option));
+        *o = menu_ops[i];
+        VDP_drawTextEx(BG_A,o->label,TILE_ATTR(PAL0,FALSE,FALSE,FALSE),o->x,o->y,DMA);
+        MEM_free(o);
     }
     cursor_cst = SPR_addSprite(&cursor,menu_ops[currentIndex].x*8-8,menu_ops[currentIndex].y*8,TILE_ATTR(PAL0,TRUE,FALSE,FALSE));
     cursor_cnf = SPR_addSprite(&cursor,menu_ops[difficulty].x*8-8,menu_ops[difficulty].y*8,TILE_ATTR(PAL1,FALSE,FALSE,FALSE));
@@ -528,21 +568,23 @@ void pickOpts()
         XGM_nextFrame();
         SYS_doVBlankProcess();
         intToStr(lives,livesStr,2);
-        VDP_drawTextEx(BG_A,livesStr,TILE_ATTR(PAL0,FALSE,FALSE,FALSE),OPTX_OPS+13,OPTY_OPS+6,DMA);
+        VDP_drawTextEx(BG_A,livesStr,TILE_ATTR(PAL0,FALSE,FALSE,FALSE),optX+1,optY+6,DMA);
         intToStr(sndIndex,sndStr,3);
-        VDP_drawTextEx(BG_A,sndStr,TILE_ATTR(PAL0,FALSE,FALSE,FALSE),OPTX_OPS+12,OPTY_OPS+7,DMA);
+        VDP_drawTextEx(BG_A,sndStr,TILE_ATTR(PAL0,FALSE,FALSE,FALSE),optX,optY+7,DMA);
         intToStr(round,lvlStr,2);
         if (lsul == FALSE)
         {
-            VDP_drawTextEx(BG_A,lvlStr,TILE_ATTR(PAL1,FALSE,FALSE,FALSE),OPTX_OPS+13,OPTY_OPS+8,DMA);
+            VDP_drawTextEx(BG_A,lvlStr,TILE_ATTR(PAL1,FALSE,FALSE,FALSE),optX+1,optY+8,DMA);
         }
         else
         {
-            VDP_drawTextEx(BG_A,lvlStr,TILE_ATTR(PAL0,FALSE,FALSE,FALSE),OPTX_OPS+13,OPTY_OPS+8,DMA);
+            VDP_drawTextEx(BG_A,lvlStr,TILE_ATTR(PAL0,FALSE,FALSE,FALSE),optX+1,optY+8,DMA);
         }
         z80ld = XGM_getCPULoad();
         intToStr(z80ld,z80str,3);
         VDP_drawTextEx(BG_A,z80str,TILE_ATTR(PAL0,FALSE,FALSE,FALSE),10,27,DMA);
+        *mapScrl -= 0.333f;
+        VDP_setHorizontalScroll(BG_B,*mapScrl);
     }
 }
 
@@ -550,11 +592,11 @@ void pickCG()
 {
     SYS_disableInts();
     SRAM_enableRO();
-    u8 lvlAddr = SRAM_readByte(SRAM_OFFSET);
-    u8 lifeAddr = SRAM_readByte(SRAM_OFFSET+2);
-    u8 diffAddr = SRAM_readByte(SRAM_OFFSET+3);
-    u32 scoreAddr = SRAM_readLong(SRAM_OFFSET+4);
-    u8 playerAddr = SRAM_readByte(SRAM_OFFSET+8);
+    u8 lvlAddr = SRAM_readByte(0);
+    u8 lifeAddr = SRAM_readByte(2);
+    u8 diffAddr = SRAM_readByte(3);
+    u32 scoreAddr = SRAM_readLong(4);
+    u8 playerAddr = SRAM_readByte(8);
     SRAM_disable();
     SYS_enableInts();
     if (lvlAddr == 0xFF)
@@ -566,6 +608,7 @@ void pickCG()
     waitMs(1000);
     VDP_clearPlane(BG_A,TRUE);
     VDP_clearPlane(BG_B,TRUE);
-    VDP_clearSprites();
+    VDP_releaseAllSprites();
+    MEM_free(mapScrl);
     JOY_setEventHandler(dummyJoyEvent);
 }
