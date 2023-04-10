@@ -1,7 +1,7 @@
 #ifndef _RES_RESOURCES_H_
 #define _RES_RESOURCES_H_
 
-extern const u8 testxgm[51200];
+extern const u8 testxgm[19712];
 extern const u8 back_sfx[4864];
 extern const u8 back_xgm[6144];
 extern const u8 barrel_brk[12032];

@@ -1,8 +1,9 @@
 #include "includes.h"
 
 VRAMRegion* sega_scrn;
+VRAMRegion* title_vram;
 VRAMRegion* options_vram;
-u16 ind[11]; // 0 - Sega Screen, 1 - Title Logo, 2 - Main Menu Background, 3-11 - Stage Graphics
+u16 ind[12]; // 0 - Sega Screen, 1 - Title Logo, 2 - Main Menu Background, 3-11 - Stage Graphics, 12 - BSOD frown
 u16 uncPal[64];
 
 static void joyEvent_Title(u16 joy, u16 changed, u16 state)
@@ -10,6 +11,7 @@ static void joyEvent_Title(u16 joy, u16 changed, u16 state)
 	if (state & BUTTON_START)
 	{
 		SND_startPlay_PCM(&menu_sel_sfx, sizeof(menu_sel_sfx),SOUND_RATE_11025,SOUND_PAN_CENTER,FALSE);
+		SPR_init();
 		mainscrn();
 	}
 }
@@ -39,8 +41,8 @@ void mainscrn()
 	mapScrl = (float *) MEM_alloc(sizeof(float));
 	*mapScrl = 0.0f;
 	VDP_releaseAllSprites();
-	VRAM_free(&sega_scrn, ind[1]);
-	VRAM_clearRegion(&sega_scrn);
+	VRAM_free(&title_vram, ind[1]);
+	VRAM_clearRegion(&title_vram);
 	VRAM_createRegion(&options_vram,TILE_USER_INDEX,18);
 	ind[2] = VRAM_alloc(&options_vram, 18);
 	currentIndex = 0;
@@ -86,14 +88,16 @@ void mainscrn()
 }
 static void title()
 {
+	VRAM_free(&sega_scrn,ind[0]);
+	VRAM_clearRegion(&sega_scrn);
+	VDP_clearPlane(BG_A,TRUE);
 	fadeInPalette(title_logo.palette->data,stephanie.palette->data,0x000,30,TRUE);
-	VRAM_createRegion(&sega_scrn,TILE_USER_INDEX,440);
-	ind[1] = VRAM_alloc(&sega_scrn,440);
+	VRAM_createRegion(&title_vram,TILE_USER_INDEX,440);
+	ind[1] = VRAM_alloc(&title_logo,440);
 	VDP_drawImageEx(BG_A,&title_logo,TILE_ATTR_FULL(PAL1,FALSE,FALSE,FALSE,ind[1]),0,0,FALSE,TRUE);
 	VDP_drawTextEx(BG_A, "@ TWP98 2022-2023", TILE_ATTR(PAL3,FALSE,FALSE,FALSE),0,27,DMA);
-	VDP_drawTextEx(BG_A, "Version pa5.14",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),12,12,DMA);
+	VDP_drawTextEx(BG_A, "Version pa5.15",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),12,12,DMA);
 	VDP_drawTextEx(BG_A,"PRESS  START",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),13,13,DMA);
-	waitMs(500);
 	JOY_setEventHandler(&joyEvent_Title);
 	XGM_startPlay(titlevgm);
 }
@@ -145,6 +149,11 @@ void fadeInPalette(Palette* fadePalette, Palette* staticPalette, u16 bgColor, u8
 	PAL_fadeIn(16,63,fadePalette,fadeTime,async);
 }
 
+static void joyEvent_SEGA(u16 joy, u16 changed, u16 state)
+{
+	
+}
+
 int main(const bool resetType)
 {
 	const u8 consoleType = *(u8 *)0xA10001;
@@ -175,21 +184,19 @@ int main(const bool resetType)
 	}
 	VDP_loadFont(custom_font.tileset,DMA);
 	SPR_init();
-	VRAM_createRegion(&sega_scrn, TILE_USER_INDEX,48);
+	VRAM_createRegion(&sega_scrn,TILE_USER_INDEX,48);
 	ind[0] = VRAM_alloc(&sega_scrn,48);
 	fadeInPalette(sega_logo.palette->data,palette_black,0x000,30,TRUE);
 	VDP_drawImageEx(BG_A, &sega_logo,TILE_ATTR_FULL(PAL1,FALSE,FALSE,FALSE,ind[0]), 12, 12, FALSE, TRUE);
 	XGM_setPCM(64,segaxgm,sizeof(segaxgm));
 	XGM_startPlayPCM(64,15,SOUND_PCM_CH1);
+	JOY_setEventHandler(&joyEvent_SEGA);
 	waitMs(2408);
 	PAL_fadeOutAll(30,FALSE);
-	VRAM_free(&sega_scrn,ind[0]);
-	VDP_clearPlane(BG_A,TRUE);
 	title();
 	while(1)
 	{   
 		SYS_doVBlankProcess();
-		JOY_reset();
 	}
 	return 0;
 }

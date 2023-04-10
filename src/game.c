@@ -14,6 +14,7 @@ VRAMRegion* stg5_vram;
 VRAMRegion* stg6_vram;
 VRAMRegion* stg7_vram;
 VRAMRegion* stg8_vram;
+VRAMRegion* bsod_vram;
 
 static float player_x = 16.0f;
 static float player_y = 144.0f;
@@ -132,12 +133,14 @@ static void joyEvent_BSOD(u16 joy, u16 changed, u16 state)
     }
 }
 
-static void killExec(char err[39])
+void killExec(char err[39])
 {
     for (u8 i = 0; i <= 3; i++)
     {
         PAL_setPalette(i,palette_black,DMA);
     }
+    VRAM_createRegion(&bsod_vram,TILE_USER_INDEX,32);
+    ind[12] = VRAM_alloc(&bsod_vram,32);
     aplib_unpack(bsod_palette,uncPal);
     PAL_fadeIn(0,31,uncPal,30,TRUE);
     VDP_clearPlane(BG_A,TRUE);
@@ -147,8 +150,8 @@ static void killExec(char err[39])
     SPR_end();
     XGM_stopPlay();
     PSG_reset();
-    VDP_drawImageEx(BG_A,&bsod_frown,TILE_ATTR_FULL(PAL1,FALSE,FALSE,FALSE,ind[round+3]),1,1,FALSE,TRUE);
     u8 consoleRegion = *(u8 *)0xA10001;
+    VDP_drawImageEx(BG_A,&bsod_frown,TILE_ATTR_FULL(PAL1,FALSE,FALSE,FALSE,ind[12]),1,1,FALSE,TRUE);
     if (consoleRegion == 0xA0)
     {
         VDP_drawTextEx(BG_A,"Your Genesis has ran into a problem",TILE_ATTR(PAL0,FALSE,FALSE,FALSE),1,9,DMA);
@@ -163,7 +166,8 @@ static void killExec(char err[39])
     VDP_drawTextEx(BG_A,"If you would like to know more, here",TILE_ATTR(PAL0,FALSE,FALSE,FALSE),1,14,DMA);
     VDP_drawTextEx(BG_A,"is the error in question:",TILE_ATTR(PAL0,FALSE,FALSE,FALSE),1,15,DMA);
     VDP_drawTextEx(BG_A,err,TILE_ATTR(PAL0,FALSE,FALSE,FALSE),1,17,DMA);
-    XGM_startPlay(gameover);
+    XGM_setPCM(64,testxgm,sizeof(testxgm));
+    XGM_startPlayPCM(64,15,SOUND_PCM_CH1);
     JOY_setEventHandler(joyEvent_BSOD);
     while (1)
     {
@@ -187,7 +191,7 @@ static void spawnHUD()
     aplib_unpack(playerNames,unpacked);
     if (player_ci > 5)
     {
-        killExec("Player ID invalid!");
+        killExec("BYTE_PLAYERID_OVRLD");
     }
     for (u8 j = 0; j < 9; j++)
     {

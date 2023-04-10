@@ -249,7 +249,7 @@ static void selectMusOpts()
     }
     case 63:
     {
-        XGM_setPCM(64,fem_die,sizeof(fem_die));
+        XGM_setPCM(64,testxgm,sizeof(testxgm));
         XGM_startPlayPCM(64,15,SOUND_PCM_CH1);
         player_ci = 0xFF;
         break;
@@ -505,15 +505,6 @@ static void joyEvent_ops(u16 joy,u16 changed,u16 state)
     }
 }
 
-static void dummyJoyEvent(u16 joy, u16 changed, u16 state)
-{
-    if (changed & state & BUTTON_ALL)
-    {
-        SND_startPlay_PCM(back_sfx,sizeof(back_sfx),SOUND_RATE_11025,SOUND_PAN_CENTER,FALSE);
-        mainscrn();
-    }
-}
-
 void pickOpts()
 {
     const char lsTxt[14] = "Stage Select:";
@@ -560,7 +551,7 @@ void pickOpts()
     cursor_cst = SPR_addSprite(&cursor,menu_ops[currentIndex].x*8-8,menu_ops[currentIndex].y*8,TILE_ATTR(PAL0,TRUE,FALSE,FALSE));
     cursor_cnf = SPR_addSprite(&cursor,menu_ops[difficulty].x*8-8,menu_ops[difficulty].y*8,TILE_ATTR(PAL1,FALSE,FALSE,FALSE));
     cursor_plr = SPR_addSprite(&cursor,menu_ops[player_ci].x*8-8,menu_ops[player_ci+4].y*8,TILE_ATTR(PAL1,FALSE,FALSE,FALSE));
-    JOY_setEventHandler(&joyEvent_ops);
+    JOY_setEventHandler(joyEvent_ops);
     opsCurUpd();
     while(1)
     {
@@ -610,5 +601,5 @@ void pickCG()
     VDP_clearPlane(BG_B,TRUE);
     VDP_releaseAllSprites();
     MEM_free(mapScrl);
-    JOY_setEventHandler(dummyJoyEvent);
+    killExec("FUNC_CONTGAME_NULL");
 }
