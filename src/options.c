@@ -14,7 +14,7 @@ u8 player_ci = 0x03;            // 0 = Jade, 1 = Stephanie, 2 = Cynthia, 3 = Sel
 static u8 sndIndex = 0x00;      // Sound Select Index
 static Sprite* cursor_cnf;
 static Sprite* cursor_plr;
-float* mapScrl;
+fix16* mapScrl;
 Sprite* cursor_cst;
 
 Option menu_main[mainNum] = {
@@ -155,7 +155,7 @@ void pickSG()
     VDP_clearPlane(BG_B,TRUE);
     VDP_clearSprites();
     MEM_free(mapScrl);
-    gametest();
+    gameInit();
 }
 
 static void selectMusOpts()
@@ -517,15 +517,15 @@ void pickOpts()
     VDP_clearPlane(BG_A,TRUE);
     VDP_releaseAllSprites();
     aplib_unpack(options_pal,uncPal);
-    fadeInPalette(uncPal,stephanie.palette->data,0x000,30,TRUE);
-    VDP_drawTextEx(BG_A,"Changes will only take effect upon",TILE_ATTR(PAL0,FALSE,FALSE,FALSE),2,0,DMA);
-    VDP_drawTextEx(BG_A,"starting a new game.",TILE_ATTR(PAL0,FALSE,FALSE,FALSE),2,1,DMA);
-    VDP_drawTextEx(BG_A,"Difficulty:",TILE_ATTR(PAL0,FALSE,FALSE,FALSE),optX-13,optY-6,DMA);
-    VDP_drawTextEx(BG_A,"Player:",TILE_ATTR(PAL0,FALSE,FALSE,FALSE),optX-13,optY-1,DMA);
-    VDP_drawTextEx(BG_A,"Lives:",TILE_ATTR(PAL0,FALSE,FALSE,FALSE),optX-13,optY+6,DMA);
-    VDP_drawTextEx(BG_A,"Sound Test:",TILE_ATTR(PAL0,FALSE,FALSE,FALSE),optX-13,optY+7,DMA);
-    VDP_drawTextEx(BG_A,"Z80 Load:",TILE_ATTR(PAL0,FALSE,FALSE,FALSE),0,27,DMA);
-    VDP_drawTextEx(BG_A,"%",TILE_ATTR(PAL0,FALSE,FALSE,FALSE),13,27,DMA);
+    fadeInPalette(uncPal,stephanie.palette->data,30,TRUE);
+    VDP_drawTextEx(BG_A,"Changes will only take effect upon",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),2,0,DMA);
+    VDP_drawTextEx(BG_A,"starting a new game.",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),2,1,DMA);
+    VDP_drawTextEx(BG_A,"Difficulty:",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),optX-13,optY-6,DMA);
+    VDP_drawTextEx(BG_A,"Player:",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),optX-13,optY-1,DMA);
+    VDP_drawTextEx(BG_A,"Lives:",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),optX-13,optY+6,DMA);
+    VDP_drawTextEx(BG_A,"Sound Test:",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),optX-13,optY+7,DMA);
+    VDP_drawTextEx(BG_A,"Z80 Load:",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),0,27,DMA);
+    VDP_drawTextEx(BG_A,"%",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),13,27,DMA);
     SYS_disableInts();
     SRAM_enableRO();
     lsul = SRAM_readByte(1);
@@ -534,23 +534,23 @@ void pickOpts()
     SYS_enableInts();
     if (lsul == FALSE)
     {
-        VDP_drawTextEx(BG_A,lsTxt,TILE_ATTR(PAL1,FALSE,FALSE,FALSE),optX-13,optY+8,DMA);
+        VDP_drawTextEx(BG_A,lsTxt,TILE_ATTR(PAL0,FALSE,FALSE,FALSE),optX-13,optY+8,DMA);
     }
     else
     {
-        VDP_drawTextEx(BG_A,lsTxt,TILE_ATTR(PAL0,FALSE,FALSE,FALSE),optX-13,optY+8,DMA);
+        VDP_drawTextEx(BG_A,lsTxt,TILE_ATTR(PAL3,FALSE,FALSE,FALSE),optX-13,optY+8,DMA);
     }
     for (u8 i = 0; i < optNum; i++)
     {
         Option *o;
         o = MEM_alloc(sizeof(Option));
         *o = menu_ops[i];
-        VDP_drawTextEx(BG_A,o->label,TILE_ATTR(PAL0,FALSE,FALSE,FALSE),o->x,o->y,DMA);
+        VDP_drawTextEx(BG_A,o->label,TILE_ATTR(PAL3,FALSE,FALSE,FALSE),o->x,o->y,DMA);
         MEM_free(o);
     }
-    cursor_cst = SPR_addSprite(&cursor,menu_ops[currentIndex].x*8-8,menu_ops[currentIndex].y*8,TILE_ATTR(PAL0,TRUE,FALSE,FALSE));
-    cursor_cnf = SPR_addSprite(&cursor,menu_ops[difficulty].x*8-8,menu_ops[difficulty].y*8,TILE_ATTR(PAL1,FALSE,FALSE,FALSE));
-    cursor_plr = SPR_addSprite(&cursor,menu_ops[player_ci].x*8-8,menu_ops[player_ci+4].y*8,TILE_ATTR(PAL1,FALSE,FALSE,FALSE));
+    cursor_cst = SPR_addSprite(&cursor,menu_ops[currentIndex].x*8-8,menu_ops[currentIndex].y*8,TILE_ATTR(PAL3,TRUE,FALSE,FALSE));
+    cursor_cnf = SPR_addSprite(&cursor,menu_ops[difficulty].x*8-8,menu_ops[difficulty].y*8,TILE_ATTR(PAL0,FALSE,FALSE,FALSE));
+    cursor_plr = SPR_addSprite(&cursor,menu_ops[player_ci].x*8-8,menu_ops[player_ci+4].y*8,TILE_ATTR(PAL0,FALSE,FALSE,FALSE));
     JOY_setEventHandler(joyEvent_ops);
     opsCurUpd();
     while(1)
@@ -559,21 +559,21 @@ void pickOpts()
         XGM_nextFrame();
         SYS_doVBlankProcess();
         intToStr(lives,livesStr,2);
-        VDP_drawTextEx(BG_A,livesStr,TILE_ATTR(PAL0,FALSE,FALSE,FALSE),optX+1,optY+6,DMA);
+        VDP_drawTextEx(BG_A,livesStr,TILE_ATTR(PAL3,FALSE,FALSE,FALSE),optX+1,optY+6,DMA);
         intToStr(sndIndex,sndStr,3);
-        VDP_drawTextEx(BG_A,sndStr,TILE_ATTR(PAL0,FALSE,FALSE,FALSE),optX,optY+7,DMA);
+        VDP_drawTextEx(BG_A,sndStr,TILE_ATTR(PAL3,FALSE,FALSE,FALSE),optX,optY+7,DMA);
         intToStr(round,lvlStr,2);
         if (lsul == FALSE)
         {
-            VDP_drawTextEx(BG_A,lvlStr,TILE_ATTR(PAL1,FALSE,FALSE,FALSE),optX+1,optY+8,DMA);
+            VDP_drawTextEx(BG_A,lvlStr,TILE_ATTR(PAL0,FALSE,FALSE,FALSE),optX+1,optY+8,DMA);
         }
         else
         {
-            VDP_drawTextEx(BG_A,lvlStr,TILE_ATTR(PAL0,FALSE,FALSE,FALSE),optX+1,optY+8,DMA);
+            VDP_drawTextEx(BG_A,lvlStr,TILE_ATTR(PAL3,FALSE,FALSE,FALSE),optX+1,optY+8,DMA);
         }
         z80ld = XGM_getCPULoad();
         intToStr(z80ld,z80str,3);
-        VDP_drawTextEx(BG_A,z80str,TILE_ATTR(PAL0,FALSE,FALSE,FALSE),10,27,DMA);
+        VDP_drawTextEx(BG_A,z80str,TILE_ATTR(PAL3,FALSE,FALSE,FALSE),10,27,DMA);
         *mapScrl -= 0.333f;
         VDP_setHorizontalScroll(BG_B,*mapScrl);
     }
@@ -601,5 +601,5 @@ void pickCG()
     VDP_clearPlane(BG_B,TRUE);
     VDP_releaseAllSprites();
     MEM_free(mapScrl);
-    killExec("FUNC_CONTGAME_NULL");
+    killExec("Feature unimplemented!");
 }
