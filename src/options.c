@@ -14,7 +14,7 @@ u8 player_ci = 0x03;            // 0 = Jade, 1 = Stephanie, 2 = Cynthia, 3 = Sel
 static u8 sndIndex = 0x00;      // Sound Select Index
 static Sprite* cursor_cnf;
 static Sprite* cursor_plr;
-fix16* mapScrl;
+fix16 mapScrl;
 Sprite* cursor_cst;
 
 Option menu_main[mainNum] = {
@@ -42,7 +42,7 @@ static const Option menu_ops[optNum] = {
 
 void mainCurUpd()
 {
-    SPR_setPosition(cursor_cst, menu_main[currentIndex].x*8-12, menu_main[currentIndex].y*8);
+    SPR_setPosition(cursor_cst, menu_main[currentIndex].x*8-8, menu_main[currentIndex].y*8);
 }
 
 void opsCurUpd()
@@ -154,7 +154,6 @@ void pickSG()
     VDP_clearPlane(BG_A,TRUE);
     VDP_clearPlane(BG_B,TRUE);
     VDP_clearSprites();
-    MEM_free(mapScrl);
     gameInit();
 }
 
@@ -261,7 +260,7 @@ static void selectMusOpts()
 
 void selectOptionOpts(u16 Option)
 {
-    const u8 pcmMax = 93;
+    const u8 pcmMax = 94;
     switch (Option)
     {
     case 0:
@@ -517,7 +516,7 @@ void pickOpts()
     VDP_clearPlane(BG_A,TRUE);
     VDP_releaseAllSprites();
     aplib_unpack(options_pal,uncPal);
-    fadeInPalette(uncPal,stephanie.palette->data,30,TRUE);
+    fadeInPalette(uncPal,lucy.palette->data,30,TRUE);
     VDP_drawTextEx(BG_A,"Changes will only take effect upon",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),2,0,DMA);
     VDP_drawTextEx(BG_A,"starting a new game.",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),2,1,DMA);
     VDP_drawTextEx(BG_A,"Difficulty:",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),optX-13,optY-6,DMA);
@@ -574,8 +573,8 @@ void pickOpts()
         z80ld = XGM_getCPULoad();
         intToStr(z80ld,z80str,3);
         VDP_drawTextEx(BG_A,z80str,TILE_ATTR(PAL3,FALSE,FALSE,FALSE),10,27,DMA);
-        *mapScrl -= 0.333f;
-        VDP_setHorizontalScroll(BG_B,*mapScrl);
+        mapScrl -= FIX16(0.3334);
+        VDP_setHorizontalScroll(BG_B,fix16ToRoundedInt(mapScrl));
     }
 }
 

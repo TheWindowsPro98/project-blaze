@@ -38,8 +38,7 @@ static void joyEvent_ms(u16 joy, u16 changed, u16 state)
 void mainscrn()
 {
 	char scoreStr[6] = "000000";
-	mapScrl = (float *) MEM_alloc(sizeof(float));
-	*mapScrl = 0.0f;
+	mapScrl = 0;
 	VDP_releaseAllSprites();
 	VRAM_free(&title_vram, ind[1]);
 	VRAM_clearRegion(&title_vram);
@@ -47,8 +46,8 @@ void mainscrn()
 	ind[2] = VRAM_alloc(&options_vram, 18);
 	currentIndex = 0;
 	aplib_unpack(options_pal,uncPal);
-	fadeInPalette(uncPal,stephanie.palette->data,30,TRUE);
-	cursor_cst = SPR_addSprite(&cursor,0,0,TILE_ATTR(PAL0,TRUE,FALSE,FALSE));
+	fadeInPalette(uncPal,lucy.palette->data,30,TRUE);
+	cursor_cst = SPR_addSprite(&cursor,0,0,TILE_ATTR(PAL3,TRUE,FALSE,FALSE));
 	VDP_clearPlane(BG_A,TRUE);
 	VDP_loadTileSet(&opts_tiles,ind[2],DMA);
 	VDP_setTileMapEx(BG_B,&options_map,TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,ind[2]),0,0,0,0,64,28,DMA);
@@ -79,9 +78,9 @@ void mainscrn()
 	}
 	while(1)
 	{
-		*mapScrl -= FIX16(0.334);
+		mapScrl -= FIX16(0.3334);
 		XGM_nextFrame();
-		VDP_setHorizontalScroll(BG_B,*mapScrl);
+		VDP_setHorizontalScroll(BG_B,fix16ToRoundedInt(mapScrl));
 		SPR_update();
 		SYS_doVBlankProcess();
 	}
@@ -91,15 +90,21 @@ static void title()
 	VRAM_free(&sega_scrn,ind[0]);
 	VRAM_clearRegion(&sega_scrn);
 	VDP_clearPlane(BG_A,TRUE);
-	fadeInPalette(title_logo.palette->data,stephanie.palette->data,30,TRUE);
+	fadeInPalette(title_logo.palette->data,lucy.palette->data,30,TRUE);
 	VRAM_createRegion(&title_vram,TILE_USER_INDEX,440);
-	ind[1] = VRAM_alloc(&title_logo,440);
+	ind[1] = VRAM_alloc(&title_vram,440);
 	VDP_drawImageEx(BG_A,&title_logo,TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,ind[1]),0,0,FALSE,TRUE);
 	VDP_drawTextEx(BG_A, "} TWP98 2022-2023", TILE_ATTR(PAL3,FALSE,FALSE,FALSE),0,27,DMA);
 	VDP_drawTextEx(BG_A, "Version pa5.15",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),12,12,DMA);
 	VDP_drawTextEx(BG_A,"PRESS  START",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),13,13,DMA);
-	JOY_setEventHandler(&joyEvent_Title);
+	XGM_setManualSync(TRUE);
 	XGM_startPlay(titlevgm);
+	JOY_setEventHandler(&joyEvent_Title);
+	while (1)
+	{
+		SYS_doVBlankProcess();
+		XGM_nextFrame();
+	}
 }
 
 void sampleDefs()
@@ -137,6 +142,7 @@ void sampleDefs()
 	XGM_setPCM(91,hvr_xgm,sizeof(hvr_xgm));
 	XGM_setPCM(92,segaxgm,sizeof(segaxgm));
 	XGM_setPCM(93,sel_xgm,sizeof(sel_xgm));
+	XGM_setPCM(94,life_sfx,sizeof(life_sfx));
 }
 
 void fadeInPalette(Palette* fadePalette, Palette* staticPalette, u8 fadeTime, bool async)
@@ -197,6 +203,7 @@ int main(const bool resetType)
 	while(1)
 	{   
 		SYS_doVBlankProcess();
+		XGM_nextFrame();
 	}
 	return 0;
 }

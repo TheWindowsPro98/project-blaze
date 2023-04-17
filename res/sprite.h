@@ -1,7 +1,6 @@
 #ifndef _RES_SPRITE_H_
 #define _RES_SPRITE_H_
 
-extern const SpriteDefinition stephanie;
 extern const SpriteDefinition lucy;
 extern const SpriteDefinition cursor;
 extern const SpriteDefinition bars;

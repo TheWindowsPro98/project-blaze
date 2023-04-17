@@ -18,7 +18,7 @@ extern u8 lives;
 extern u8 difficulty;
 extern u32 score;
 extern u8 player_ci;
-extern fix16* mapScrl;
+extern fix16 mapScrl;
 
 Option menu_main[mainNum];
 void mainCurUpd();

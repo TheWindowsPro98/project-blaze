@@ -1,12 +1,16 @@
 #include "includes.h"
 
 enum hudPos {livesStrX = 19, scoreStrX = 12, fpsStrX = 19};
+enum playerAnim {idleAnim, walkAnim};
+enum camScrlBounds {leftCamBnd = 48, rightCamBnd = 96, highCamBnd = 48, lowCamBnd = 128};
+enum vdpViewport {horzRes = 320, vertRes = 224};
+enum playerSize {playerWidth = 16, playerHeight = 16};
 
 Sprite* sPlayer;
 Sprite* healthbar[17];
 Sprite* icon;
-Map* testlvlBG;
-Map* testlvlFG;
+Map* lvlBG;
+Map* lvlFG;
 VRAMRegion* stg1_vram;
 VRAMRegion* stg2_vram;
 VRAMRegion* stg3_vram;
@@ -17,19 +21,25 @@ VRAMRegion* stg7_vram;
 VRAMRegion* stg8_vram;
 VRAMRegion* bsod_vram;
 
-static fix32 player_x = FIX32(16);
-static fix32 player_y = FIX32(128);
-static fix32 cam_x = 0.0f;
-static fix32 cam_y = 0.0f; 
+static fix32 player_x = FIX32(0);
+static fix32 player_y = FIX32(352);
 static fix32 player_spd_x;
+static fix32 player_spd_y;
 static fix32 player_jump;
 static bool paused = FALSE;
 static bool isJumping = FALSE;
 static bool isGrounded = TRUE;
 static u8 health = 128;
-static fix32 playerSpeedMax = FIX32(2);
-static fix32 playerAcceleration = FIX32(1.025);
-static const fix32 playerBaseSpeed = FIX32(0.5);
+const u32 mapWidths[8] = 
+{
+    0,0,0,0,0,0,0,1280
+};
+const u32 mapHeights[lvlMax+1] = 
+{
+    0,0,0,0,0,0,0,448
+};
+static s16 new_cam_x;
+static s16 new_cam_y;
 static char playerName[10];
 
 static u8 sPosToTPos(u8 basePos)
@@ -70,6 +80,7 @@ static void pauseChk()
         XGM_pausePlay();
         sPlayer->timer = 0;
         player_spd_x = 0;
+        player_spd_y = 0;
         PAL_getColors(0,uncPal,64);
         for (u8 i = 0; i < 64; i++)
         {
@@ -249,22 +260,22 @@ static void pauseInputHdl(u16 joy, u16 changed, u16 state)
 
 static void gameInputHdl(u16 joy, u16 changed, u16 state)
 {
-    if (state & BUTTON_RIGHT)
+    if (state & BUTTON_LEFT)
     {
-        SPR_setHFlip(sPlayer,FALSE);
-        SPR_setAnim(sPlayer,1);
-        player_spd_x = playerBaseSpeed;
-    }
-    else if (state & BUTTON_LEFT)
-    {
+        SPR_setAnim(sPlayer,walkAnim);
         SPR_setHFlip(sPlayer,TRUE);
-        SPR_setAnim(sPlayer,1);
-        player_spd_x = -playerBaseSpeed;
+        player_spd_x = FIX32(-1);
+    }
+    else if (state & BUTTON_RIGHT)
+    {
+        SPR_setAnim(sPlayer,walkAnim);
+        SPR_setHFlip(sPlayer,FALSE);
+        player_spd_x = FIX32(1);
     }
     else
     {
-        SPR_setAnim(sPlayer,0);
-        player_spd_x = 0.0f;
+        SPR_setAnim(sPlayer,idleAnim);
+        player_spd_x = FIX32(0);
     }
     if (changed & state & BUTTON_C)
     {
@@ -280,46 +291,84 @@ static void gameInputHdl(u16 joy, u16 changed, u16 state)
 
 static void camPos()
 {
-    switch (round)
+    s16 px = fix32ToInt(player_x);
+    s16 py = fix32ToInt(player_y);
+    s16 cam_x;
+    s16 cam_y;
+    s16 scrn_x = px - cam_x;
+    s16 scrn_y = py - cam_y;
+    if (scrn_x > rightCamBnd)
     {
-    case 8:
-    {
-        break;
-    }    
-    default:
-    {
-        cam_x = -player_x;
-        cam_y = -player_y;
-        VDP_setScrollingMode(HSCROLL_PLANE,VSCROLL_PLANE);
-        VDP_setHorizontalScroll(BG_A,cam_x);
-        VDP_setHorizontalScroll(BG_B,cam_x/2);
-        break;
+        new_cam_x = px - rightCamBnd;
     }
+    else if (scrn_x < leftCamBnd)
+    {
+        new_cam_x = px - leftCamBnd;
     }
+    else
+    {
+        new_cam_x = cam_x;
+    }
+    if (scrn_y > lowCamBnd)
+    {
+        new_cam_y = py - lowCamBnd;
+    }
+    else if (scrn_y < highCamBnd)
+    {
+        new_cam_y = py - highCamBnd;
+    }
+    else
+    {
+        new_cam_y = cam_y;
+    }
+    if (new_cam_x < 0)
+    {
+        new_cam_x = 0;
+    }
+    else if (new_cam_x > (mapWidths[round-1] - horzRes))
+    {
+        new_cam_x = mapWidths[round-1] - horzRes;
+    }
+    if (new_cam_y < 0)
+    {
+        new_cam_y = 0;
+    }
+    else if (new_cam_y > (mapHeights[round-1] - vertRes))
+    {
+        new_cam_y = mapHeights[round-1] - vertRes;
+    }
+    if ((cam_x != new_cam_x) || (cam_y != new_cam_y))
+    {
+        cam_x = new_cam_x;
+        cam_y = new_cam_y;
+        
+        
+    }
+    MAP_scrollTo(lvlFG,cam_x,cam_y);
+        MAP_scrollTo(lvlBG,cam_x/2,cam_y/2);
 }
 
 static void playerPos()
 {
-    SPR_setPosition(sPlayer,fix32ToInt(player_x),fix32ToInt(player_y));
-    player_x = fix32Add(player_x, player_spd_x);
-    player_spd_x = fix32Mul(player_spd_x, playerAcceleration);
-    if (player_spd_x >= playerSpeedMax)
+    SPR_setPosition(sPlayer,fix32ToInt(player_x) - new_cam_x,fix32ToInt(player_y) - new_cam_y);
+    player_x += player_spd_x;
+    player_y += player_spd_y;
+    if (player_x < FIX32(0))
     {
-        player_spd_x = playerSpeedMax;
+        player_x = FIX32(0);
     }
-    else if (player_spd_x <= -playerSpeedMax)
+    else if (player_x > FIX32(mapWidths[round-1] - playerWidth))
     {
-        player_spd_x = -playerSpeedMax;
+        player_x = FIX32(mapWidths[round-1] - playerWidth);
     }
-    if (player_x <= 0)
+    if (player_y < FIX32(0))
     {
-        player_x = 0;
-        player_spd_x = 0;
+        player_y = FIX32(0);
     }
-    /* else if (player_x >= 512)
+    else if (player_y > FIX32(mapHeights[round-1] - playerHeight))
     {
-        player_x = 0;
-    } */
+        player_y = FIX32(mapHeights[round-1] - playerHeight);
+    }
 }
 
 static void drawIntToHex(s32 value, const char destStr, u8 minChr, u8 x, u8 y)
@@ -341,8 +390,6 @@ static void updateHUD()
     u8 z80ld = XGM_getCPULoad();
     s16 px = fix32ToInt(player_x);
     s16 py = fix32ToInt(player_y);
-    s16 cx = (signed int)cam_x;
-    s16 cy = (signed int)cam_y;
     u16 mem = MEM_getFree();
     u8 sprAmnt = SPR_getNumActiveSprite();
     intToStr(sprAmnt,livesStr,2);
@@ -352,12 +399,10 @@ static void updateHUD()
     drawIntToHex(z80ld,z80Str,2,fpsStrX,0);
     drawIntToHex(px,pxStr,4,fpsStrX+3,0);
     drawIntToHex(py,pyStr,4,fpsStrX+7,0);
-    drawIntToHex(cx,cxStr,4,fpsStrX+3,1);
-    drawIntToHex(cy,cyStr,4,fpsStrX+7,1);
-    drawIntToHex(paused,pauseStr,2,fpsStrX+12,0);
-    drawIntToHex(isJumping,jmpStr,2,fpsStrX+14,0);
-    drawIntToHex(isGrounded,gndStr,2,fpsStrX+16,0);
-    drawIntToHex(health,healthStr,2,fpsStrX+12,1);
+    drawIntToHex(paused,pauseStr,2,fpsStrX+3,1);
+    drawIntToHex(isJumping,jmpStr,2,fpsStrX+5,1);
+    drawIntToHex(isGrounded,gndStr,2,fpsStrX+7,1);
+    drawIntToHex(health,healthStr,2,fpsStrX+9,1);
 }
 
 static void drawLevel()
@@ -372,14 +417,9 @@ static void drawLevel()
         aplib_unpack(test_palette,uncPal);
         fadeInPalette(uncPal,palette_black,30,TRUE);
         ind[3] = VRAM_alloc(&stg1_vram,192);
-        SPR_addSprite(&signpost,136,fix32ToInt(player_y)+16,TILE_ATTR(PAL3,FALSE,FALSE,FALSE));
-        SPR_addSprite(&coin,152,fix32ToInt(player_y),TILE_ATTR(PAL3,FALSE,FALSE,FALSE));
         VDP_loadTileSet(&test_tiles,ind[3],DMA);
-        testlvlBG = MAP_create(&test_bg,BG_B,TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,ind[3]));
-        MAP_scrollTo(testlvlBG,0,0);
-        SYS_doVBlankProcess();
-        testlvlFG = MAP_create(&test_fg,BG_A,TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,ind[3]));
-        MAP_scrollTo(testlvlFG,0,224);
+        lvlBG = MAP_create(&test_bg,BG_B,TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,ind[3]));
+        lvlFG = MAP_create(&test_fg,BG_A,TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,ind[3]));
         XGM_startPlay(testtrck2);
         break;
     }
@@ -400,11 +440,11 @@ void gameInit()
     JOY_setEventHandler(&gameInputHdl);
     while(1)
     {
-        SPR_update();
+        camPos();
         SYS_doVBlankProcess();
+        SPR_update();
         XGM_nextFrame();
         playerPos();
-        camPos();
         updateHUD();
     }
 }

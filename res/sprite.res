@@ -1,5 +1,4 @@
 # Sprites
-SPRITE stephanie "gfx/stephanie_rev0.png" 8 8 BEST 12
 SPRITE lucy "gfx/lucy_rev0.png" 6 8 BEST 12
 SPRITE cursor "gfx/cursor.png" 1 1 BEST 0
 SPRITE bars "gfx/healthbars.png" 1 1 BEST 0
