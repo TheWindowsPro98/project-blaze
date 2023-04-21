@@ -3,11 +3,10 @@
 
 extern const u8 lvlclr[24576];
 extern const u8 gameover[15360];
-extern const u8 rboss[84992];
-extern const u8 fboss[49664];
+extern const u8 rboss[32512];
+extern const u8 fboss[7424];
 extern const u8 ending[70656];
-extern const u8 testtrck[147200];
-extern const u8 testtrck2[103168];
+extern const u8 testtrck[21760];
 extern const u8 titlevgm[47872];
 extern const u8 elevator[20736];
 extern const u8 stg1[81920];

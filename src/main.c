@@ -6,6 +6,69 @@ VRAMRegion* options_vram;
 u16 ind[12]; // 0 - Sega Screen, 1 - Title Logo, 2 - Main Menu Background, 3-11 - Stage Graphics, 12 - BSOD frown
 u16 uncPal[64];
 
+const Option menu_main[mainNum] = {
+	{mainX, mainY, "New Game"},
+    {mainX, mainY+1, "Continue Game"},
+	{mainX, mainY+2, "Preferences"},
+};
+
+static void mainCurUpd()
+{
+    SPR_setPosition(cursor_cst, menu_main[currentIndex].x*8-8, menu_main[currentIndex].y*8);
+}
+
+static void curMoveUpMain()
+{
+    if(currentIndex > 0)
+    {
+        currentIndex--;
+        mainCurUpd();
+    }
+    else if (currentIndex == 0)
+    {
+        currentIndex = mainNum-1;
+        mainCurUpd();
+    }
+}
+
+static void curMoveDownMain()
+{
+    if(currentIndex < mainNum-1)
+    {
+        currentIndex++;
+        mainCurUpd();
+    }
+    else if (currentIndex == mainNum-1)
+    {
+        currentIndex = 0;
+        mainCurUpd();
+    }
+}
+
+static void selectOptMain(u16 Option)
+{
+    switch (Option)
+    {
+    case 0:
+    {
+        pickSG();
+        break;
+    }
+    case 1:
+    {
+        pickCG();
+        break;
+    }
+    case 2:
+    {
+        pickOpts();
+        break;
+    }
+    default:
+        break;
+    }
+}
+
 static void joyEvent_Title(u16 joy, u16 changed, u16 state)
 {
 	if (state & BUTTON_START)
@@ -70,11 +133,8 @@ void mainscrn()
 	mainCurUpd();
 	for (u8 i = 0; i < mainNum; i++)
 	{
-    	Option *o;
-		o = MEM_alloc(sizeof(Option));
-		*o = menu_main[i];
-    	VDP_drawTextEx(BG_A,o->label,TILE_ATTR(PAL3,TRUE,FALSE,FALSE),o->x,o->y,DMA);
-		MEM_free(o);
+    	Option o = menu_main[i];
+    	VDP_drawTextEx(BG_A,o.label,TILE_ATTR(PAL3,TRUE,FALSE,FALSE),o.x,o.y,DMA);
 	}
 	while(1)
 	{
@@ -95,7 +155,7 @@ static void title()
 	ind[1] = VRAM_alloc(&title_vram,440);
 	VDP_drawImageEx(BG_A,&title_logo,TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,ind[1]),0,0,FALSE,TRUE);
 	VDP_drawTextEx(BG_A, "} TWP98 2022-2023", TILE_ATTR(PAL3,FALSE,FALSE,FALSE),0,27,DMA);
-	VDP_drawTextEx(BG_A, "Version pa5.15",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),12,12,DMA);
+	VDP_drawTextEx(BG_A, "Version pa5.16",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),12,12,DMA);
 	VDP_drawTextEx(BG_A,"PRESS  START",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),13,13,DMA);
 	XGM_setManualSync(TRUE);
 	XGM_startPlay(titlevgm);

@@ -1,7 +1,5 @@
 #include "includes.h"
 
-enum xposes {optX = 23, mainX = 13};
-enum yposes {optY = 12, mainY = 13};
 enum specialOpts {livesOpts = 10, sndOpts, lsOpts};
 
 u8 currentIndex = 0;			// Currently selected menu item
@@ -10,27 +8,21 @@ bool lsul = FALSE;              // Is level select enabled? (1 - yes, 0 - no)
 u8 lives = 0x05;
 u8 difficulty = 0x01;           // 0 = Easy, 1 = Normal, 2 = Hard, 3 = Even Harder (that's what she said)
 u32 score = 0x000000;
-u8 player_ci = 0x03;            // 0 = Jade, 1 = Stephanie, 2 = Cynthia, 3 = Selina, 4 = Alexia, 5 = Christina
-static u8 sndIndex = 0x00;      // Sound Select Index
-static Sprite* cursor_cnf;
-static Sprite* cursor_plr;
+u8 player_ci = 0x02;            // 0 = Jade, 1 = Stephanie, 2 = Emma, 3 = Selina, 4 = Alexia, 5 = Christina
+u8 sndIndex = 0x00;      // Sound Select Index
+Sprite* cursor_cnf;
+Sprite* cursor_plr;
 fix16 mapScrl;
 Sprite* cursor_cst;
 
-Option menu_main[mainNum] = {
-	{mainX, mainY, "New Game"},
-    {mainX, mainY+1, "Continue Game"},
-	{mainX, mainY+2, "Preferences"},
-};
-
-static const Option menu_ops[optNum] = {
+const Option menu_ops[optNum] = {
     {optX, optY-6, "Easy"},
     {optX, optY-5, "Normal"},
     {optX, optY-4, "Hard"},
     {optX, optY-3, "Harder"}, // That's still what she said
     {optX, optY-1, "Jade"},
     {optX, optY, "Stephanie"},
-    {optX, optY+1, "Cynthia"},
+    {optX, optY+1, "Emma"},
     {optX, optY+2, "Selina"},
 	{optX, optY+3, "Alexia"},
     {optX, optY+4, "Christina"},
@@ -40,17 +32,12 @@ static const Option menu_ops[optNum] = {
     {optX-6, optY+10, "Exit"},
 };
 
-void mainCurUpd()
-{
-    SPR_setPosition(cursor_cst, menu_main[currentIndex].x*8-8, menu_main[currentIndex].y*8);
-}
-
 void opsCurUpd()
 {
     SPR_setPosition(cursor_cst,menu_ops[currentIndex].x*8-8,menu_ops[currentIndex].y*8);
 }
 
-void curMoveUpOps()
+static void curMoveUpOps()
 {
     if (currentIndex > 0)
     {
@@ -64,7 +51,7 @@ void curMoveUpOps()
     }
 }
 
-void curMoveDownOps()
+static void curMoveDownOps()
 {
     if (currentIndex < optNum-1)
     {
@@ -75,58 +62,6 @@ void curMoveDownOps()
     {
         currentIndex = 0;
         opsCurUpd();
-    }
-}
-
-void curMoveUpMain()
-{
-    if(currentIndex > 0)
-    {
-        currentIndex--;
-        mainCurUpd();
-    }
-    else if (currentIndex == 0)
-    {
-        currentIndex = mainNum-1;
-        mainCurUpd();
-    }
-}
-
-void curMoveDownMain()
-{
-    if(currentIndex < mainNum-1)
-    {
-        currentIndex++;
-        mainCurUpd();
-    }
-    else if (currentIndex == mainNum-1)
-    {
-        currentIndex = 0;
-        mainCurUpd();
-    }
-}
-
-void selectOptMain(u16 Option)
-{
-    switch (Option)
-    {
-    case 0:
-    {
-        pickSG();
-        break;
-    }
-    case 1:
-    {
-        pickCG();
-        break;
-    }
-    case 2:
-    {
-        pickOpts();
-        break;
-    }
-    default:
-        break;
     }
 }
 
@@ -238,19 +173,7 @@ static void selectMusOpts()
     }
     case 15:
     {
-        XGM_startPlay(testtrck2);
-        break;
-    }
-    case 16:
-    {
         XGM_startPlay(titlevgm);
-        break;
-    }
-    case 63:
-    {
-        XGM_setPCM(64,testxgm,sizeof(testxgm));
-        XGM_startPlayPCM(64,15,SOUND_PCM_CH1);
-        player_ci = 0xFF;
         break;
     }
     default:
@@ -260,7 +183,7 @@ static void selectMusOpts()
 
 void selectOptionOpts(u16 Option)
 {
-    const u8 pcmMax = 94;
+    u8 pcmMax = 94;
     switch (Option)
     {
     case 0:
@@ -506,7 +429,7 @@ static void joyEvent_ops(u16 joy,u16 changed,u16 state)
 
 void pickOpts()
 {
-    const char lsTxt[14] = "Stage Select:";
+    char lsTxt[14] = "Stage Select:";
     char livesStr[2] = "05";
     char sndStr[3] = "000";
     char lvlStr[2] = "00";
@@ -541,11 +464,8 @@ void pickOpts()
     }
     for (u8 i = 0; i < optNum; i++)
     {
-        Option *o;
-        o = MEM_alloc(sizeof(Option));
-        *o = menu_ops[i];
-        VDP_drawTextEx(BG_A,o->label,TILE_ATTR(PAL3,FALSE,FALSE,FALSE),o->x,o->y,DMA);
-        MEM_free(o);
+        Option o = menu_ops[i];
+        VDP_drawTextEx(BG_A,o.label,TILE_ATTR(PAL3,FALSE,FALSE,FALSE),o.x,o.y,DMA);
     }
     cursor_cst = SPR_addSprite(&cursor,menu_ops[currentIndex].x*8-8,menu_ops[currentIndex].y*8,TILE_ATTR(PAL3,TRUE,FALSE,FALSE));
     cursor_cnf = SPR_addSprite(&cursor,menu_ops[difficulty].x*8-8,menu_ops[difficulty].y*8,TILE_ATTR(PAL0,FALSE,FALSE,FALSE));

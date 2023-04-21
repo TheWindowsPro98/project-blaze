@@ -1,8 +1,8 @@
 #include "includes.h"
 
 enum hudPos {livesStrX = 19, scoreStrX = 12, fpsStrX = 19};
-enum playerAnim {idleAnim, walkAnim};
-enum camScrlBounds {leftCamBnd = 48, rightCamBnd = 96, highCamBnd = 48, lowCamBnd = 128};
+enum playerAnim {idleAnim, walkAnim, jumpAnim};
+enum camScrlBounds {leftCamBnd = 95, rightCamBnd = 96, highCamBnd = 48, lowCamBnd = 128};
 enum vdpViewport {horzRes = 320, vertRes = 224};
 enum playerSize {playerWidth = 16, playerHeight = 16};
 
@@ -21,26 +21,26 @@ VRAMRegion* stg7_vram;
 VRAMRegion* stg8_vram;
 VRAMRegion* bsod_vram;
 
-static fix32 player_x = FIX32(0);
-static fix32 player_y = FIX32(352);
-static fix32 player_spd_x;
-static fix32 player_spd_y;
-static fix32 player_jump;
-static bool paused = FALSE;
-static bool isJumping = FALSE;
-static bool isGrounded = TRUE;
-static u8 health = 128;
-const u32 mapWidths[8] = 
+fix32 player_x = FIX32(0);
+fix32 player_y = FIX32(352);
+fix32 player_spd_x;
+fix32 player_spd_y;
+fix32 player_jump;
+bool paused = FALSE;
+bool isJumping = FALSE;
+bool isGrounded = TRUE;
+u8 health = 128;
+const u32 mapWidths[lvlMax] = 
 {
     0,0,0,0,0,0,0,1280
 };
-const u32 mapHeights[lvlMax+1] = 
+const u32 mapHeights[lvlMax] = 
 {
     0,0,0,0,0,0,0,448
 };
-static s16 new_cam_x;
-static s16 new_cam_y;
-static char playerName[10];
+s16 new_cam_x;
+s16 new_cam_y;
+const char playerNames[7][10] = {"Jade","Stephanie","Emma","Selina","Alexia","Christina","Vanellope"};
 
 static u8 sPosToTPos(u8 basePos)
 {
@@ -116,7 +116,7 @@ static void spawnPlayer()
         }
         case 2:
         {
-            aplib_unpack(cynthia_pal,uncPal);
+            aplib_unpack(emma_pal,uncPal);
             PAL_setPalette(PAL3,uncPal,DMA);
             sPlayer = SPR_addSprite(&lucy,player_x,player_y,TILE_ATTR(PAL3,FALSE,FALSE,FALSE));
             break;
@@ -144,7 +144,7 @@ static void spawnPlayer()
         }
         default:
         {
-            aplib_unpack(selina_pal,uncPal);
+            aplib_unpack(emma_pal,uncPal);
             PAL_setPalette(PAL3,uncPal,DMA);
             sPlayer = SPR_addSprite(&lucy,player_x,player_y,TILE_ATTR(PAL3,FALSE,FALSE,FALSE));
             break;
@@ -214,17 +214,11 @@ static void spawnHUD()
     healthbar[17] = SPR_addSprite(&bars,sPosToTPos(2+i),sPosToTPos(1),TILE_ATTR(PAL3,FALSE,FALSE,FALSE));
     SPR_setAnim(healthbar[17],3);
     VDP_setWindowVPos(FALSE,2);
-    u8 unpacked[64];
-    aplib_unpack(playerNames,unpacked);
     if (player_ci > 5)
     {
-        killExec("Player ID > 5!");
+        player_ci = 6;
     }
-    for (u8 j = 0; j < 9; j++)
-    {
-        playerName[j] = unpacked[player_ci*10+j-player_ci];
-    }
-    VDP_drawTextEx(WINDOW,playerName,TILE_ATTR(PAL3,TRUE,FALSE,FALSE),2,0,DMA);
+    VDP_drawTextEx(WINDOW,playerNames[player_ci],TILE_ATTR(PAL3,TRUE,FALSE,FALSE),2,0,DMA);
     icon = SPR_addSprite(&plr_icns,0,0,TILE_ATTR(PAL3,FALSE,FALSE,FALSE));
     SPR_setAnim(icon,player_ci);
     VDP_drawTextEx(WINDOW,"{",TILE_ATTR(PAL3,TRUE,FALSE,FALSE),scoreStrX-1,0,DMA);
@@ -341,11 +335,9 @@ static void camPos()
     {
         cam_x = new_cam_x;
         cam_y = new_cam_y;
-        
-        
     }
     MAP_scrollTo(lvlFG,cam_x,cam_y);
-        MAP_scrollTo(lvlBG,cam_x/2,cam_y/2);
+    MAP_scrollTo(lvlBG,cam_x/2,cam_y/2);
 }
 
 static void playerPos()
@@ -388,6 +380,25 @@ static void updateHUD()
     char jmpStr[3] = "00";
     char gndStr[3] = "00";
     u8 z80ld = XGM_getCPULoad();
+    if (z80ld > 100)
+    {
+        Z80_unloadDriver();
+        Z80_loadDriver(Z80_DRIVER_XGM,TRUE);
+        switch (round)
+        {
+        case 8:
+        {
+            XGM_startPlay(testtrck);
+            break;
+        }
+        default:
+        {
+            XGM_setPCM(64,testxgm,sizeof(testxgm));
+            XGM_startPlayPCM(64,15,SOUND_PCM_CH1);
+            break;
+        }
+        }
+    }
     s16 px = fix32ToInt(player_x);
     s16 py = fix32ToInt(player_y);
     u16 mem = MEM_getFree();
@@ -415,12 +426,12 @@ static void drawLevel()
         VRAM_clearRegion(&options_vram);
         VRAM_createRegion(&stg1_vram,TILE_USER_INDEX,192);
         aplib_unpack(test_palette,uncPal);
-        fadeInPalette(uncPal,palette_black,30,TRUE);
         ind[3] = VRAM_alloc(&stg1_vram,192);
+        fadeInPalette(uncPal,palette_black,30,TRUE);
         VDP_loadTileSet(&test_tiles,ind[3],DMA);
         lvlBG = MAP_create(&test_bg,BG_B,TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,ind[3]));
         lvlFG = MAP_create(&test_fg,BG_A,TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,ind[3]));
-        XGM_startPlay(testtrck2);
+        XGM_startPlay(testtrck);
         break;
     }
     default:
@@ -437,6 +448,7 @@ void gameInit()
     spawnHUD();
     drawLevel();
     spawnPlayer();
+    playerPos();
     JOY_setEventHandler(&gameInputHdl);
     while(1)
     {

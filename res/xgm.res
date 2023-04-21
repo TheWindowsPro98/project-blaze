@@ -5,7 +5,6 @@ XGM rboss "vgm/boss.vgm"
 XGM fboss "vgm/boss2.vgm"
 XGM ending "vgm/end.vgm"
 XGM testtrck "vgm/testvgm.vgm"
-XGM testtrck2 "vgm/test2.vgm"
 XGM titlevgm "vgm/title.vgm"
 #-Stage-Themes--------------------
 XGM elevator "vgm/elevator.vgm"

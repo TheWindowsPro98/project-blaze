@@ -2,7 +2,9 @@
 
 extern Sprite* cursor_cst;
 enum numOpts {optNum = 14, mainNum = 3};
-enum maxVals {scoreMax = 999990, livesMax = 99, lvlMax = 7};
+enum maxVals {scoreMax = 999990, livesMax = 99, lvlMax = 8, plrIDMax = 5};
+enum xposes {optX = 23, mainX = 13};
+enum yposes {optY = 12, mainY = 13};
 
 typedef struct 
 {
@@ -19,9 +21,3 @@ extern u8 difficulty;
 extern u32 score;
 extern u8 player_ci;
 extern fix16 mapScrl;
-
-Option menu_main[mainNum];
-void mainCurUpd();
-void curMoveUpMain();
-void curMoveDownMain();
-void selectOptMain(u16 Option);
