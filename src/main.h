@@ -8,5 +8,4 @@ extern u16 ind[12];
 extern u16 uncPal[64];
 
 void mainscrn();
-void sampleDefs();
 void fadeInPalette(Palette* fadePalette, Palette* staticPalette, u8 fadeTime, bool async);

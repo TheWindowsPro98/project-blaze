@@ -25,7 +25,7 @@ const Option menu_ops[optNum] = {
     {optX, optY+1, "Emma"},
     {optX, optY+2, "Selina"},
 	{optX, optY+3, "Alexia"},
-    {optX, optY+4, "Christina"},
+    {optX, optY+4, "Jessica"},
     {optX+1, optY+6, ""},
     {optX, optY+7, ""},
     {optX+1, optY+8, ""},
@@ -67,22 +67,6 @@ static void curMoveDownOps()
 
 void pickSG()
 {
-    VDP_setHorizontalScroll(BG_B,0);
-    SYS_disableInts();
-    SRAM_enable();
-    SRAM_writeByte(0, round);
-    u8 lsAddr = SRAM_readByte(1);
-    if (lsAddr != 1)
-    {
-        SRAM_writeByte(+1,lsul);
-    }
-    score = 0x000000;
-    SRAM_writeByte(2, lives);
-    SRAM_writeByte(3, difficulty);
-    SRAM_writeByte(4, player_ci);
-    SRAM_writeLong(5, score);
-    SRAM_disable();
-    SYS_enableInts();
     waitMs(1131);
     PAL_fadeOutAll(30,FALSE);
     waitMs(1000);
@@ -90,6 +74,45 @@ void pickSG()
     VDP_clearPlane(BG_B,TRUE);
     VDP_clearSprites();
     gameInit();
+}
+
+static void sampleDefs()
+{
+	XGM_setPCM(64,barrel_brk,sizeof(barrel_brk));
+	XGM_setPCM(65,angy_yell,sizeof(angy_yell));
+	XGM_setPCM(66,max_punch,sizeof(max_punch));
+	XGM_setPCM(67,punch1,sizeof(punch1));
+	XGM_setPCM(68,punch2,sizeof(punch2));
+	XGM_setPCM(69/*nice*/,punch3,sizeof(punch3));
+	XGM_setPCM(70,punch4,sizeof(punch4));
+	XGM_setPCM(71,punch5,sizeof(punch5));
+	XGM_setPCM(72,consume,sizeof(consume));
+	XGM_setPCM(73,boom_sfx,sizeof(boom_sfx));
+	XGM_setPCM(74,fall,sizeof(fall));
+	XGM_setPCM(75,break_gen,sizeof(break_gen));
+	XGM_setPCM(76,itm_cons,sizeof(itm_cons));
+	XGM_setPCM(77,jump_sfx,sizeof(jump_sfx));
+	XGM_setPCM(78,land,sizeof(land));
+	XGM_setPCM(79,stab_sfx,sizeof(stab_sfx));
+	/*-------------------------------------*/
+	XGM_setPCM(80,fem_die,sizeof(fem_die));
+	XGM_setPCM(81,kikoku,sizeof(kikoku));
+	XGM_setPCM(82,fem_kick,sizeof(fem_throw));
+	XGM_setPCM(83,fem_throw,sizeof(fem_throw));
+	/*---------------------------------------*/
+	XGM_setPCM(84,mans_ded1,sizeof(mans_ded1));
+	XGM_setPCM(85,mans_ded2,sizeof(mans_ded2));
+	XGM_setPCM(86,fasthit,sizeof(fasthit));
+	XGM_setPCM(87,mans_throw_enemy,sizeof(mans_throw_enemy));
+	XGM_setPCM(88,mans_throw_item,sizeof(mans_throw_item));
+	/*---------------------------------------------------*/
+	XGM_setPCM(89,testxgm,sizeof(testxgm));
+	XGM_setPCM(90,back_xgm,sizeof(back_xgm));
+	XGM_setPCM(91,hvr_xgm,sizeof(hvr_xgm));
+	XGM_setPCM(92,segaxgm,sizeof(segaxgm));
+	XGM_setPCM(93,sel_xgm,sizeof(sel_xgm));
+	XGM_setPCM(94,life_sfx,sizeof(life_sfx));
+    XGM_setPCM(95,stop_sfx,sizeof(stop_sfx));
 }
 
 static void selectMusOpts()
@@ -183,7 +206,7 @@ static void selectMusOpts()
 
 void selectOptionOpts(u16 Option)
 {
-    u8 pcmMax = 94;
+    u8 pcmMax = 95;
     switch (Option)
     {
     case 0:
@@ -268,7 +291,7 @@ void selectOptionOpts(u16 Option)
             if (sndIndex > pcmMax)
             {
                 XGM_stopPlayPCM(SOUND_PCM_CH2);
-                SND_startPlay_PCM(&back_sfx,sizeof(back_sfx),SOUND_RATE_11025,SOUND_PAN_CENTER,FALSE);
+                XGM_startPlayPCM(90,15,SOUND_PCM_CH1);
             }
         }
         break;
@@ -502,17 +525,13 @@ void pickCG()
 {
     SYS_disableInts();
     SRAM_enableRO();
-    u8 lvlAddr = SRAM_readByte(0);
-    u8 lifeAddr = SRAM_readByte(2);
-    u8 diffAddr = SRAM_readByte(3);
-    u32 scoreAddr = SRAM_readLong(4);
-    u8 playerAddr = SRAM_readByte(8);
+    round = SRAM_readByte(lvlSrm);
+    lives = SRAM_readByte(livesSrm);
+    score = SRAM_readLong(scoreSrm);
+    player_ci = SRAM_readByte(plrSrm);
+    difficulty = SRAM_readByte(diffSrm);
     SRAM_disable();
     SYS_enableInts();
-    if (lvlAddr == 0xFF)
-    {
-        pickSG();
-    }
     waitMs(1131);
     PAL_fadeOutAll(30,FALSE);
     waitMs(1000);
@@ -520,5 +539,5 @@ void pickCG()
     VDP_clearPlane(BG_B,TRUE);
     VDP_releaseAllSprites();
     MEM_free(mapScrl);
-    killExec("Feature unimplemented!");
+    gameInit();
 }

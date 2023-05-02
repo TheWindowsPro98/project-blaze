@@ -8,4 +8,4 @@ BIN emma_pal "pals/emma.bin" 2 2 0 APLIB FALSE
 BIN selina_pal "pals/selina.bin" 2 2 0 APLIB FALSE
 BIN stephanie_pal "pals/stephanie.bin" 2 2 0 APLIB FALSE
 BIN alexia_pal "pals/alexia.bin" 2 2 0 APLIB FALSE
-BIN christina_pal "pals/christina.bin" 2 2 0 APLIB FALSE
+BIN jessica_pal "pals/jessica.bin" 2 2 0 APLIB FALSE

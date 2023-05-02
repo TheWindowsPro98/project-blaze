@@ -2,9 +2,9 @@
 
 enum hudPos {livesStrX = 19, scoreStrX = 12, fpsStrX = 19};
 enum playerAnim {idleAnim, walkAnim, jumpAnim};
-enum camScrlBounds {leftCamBnd = 95, rightCamBnd = 96, highCamBnd = 48, lowCamBnd = 128};
+enum camScrlBounds {leftCamBnd = 135, rightCamBnd = 135, highCamBnd = 15, lowCamBnd = 127};
 enum vdpViewport {horzRes = 320, vertRes = 224};
-enum playerSize {playerWidth = 16, playerHeight = 16};
+enum playerSize {playerWidth = 32, playerHeight = 32};
 
 Sprite* sPlayer;
 Sprite* healthbar[17];
@@ -21,11 +21,11 @@ VRAMRegion* stg7_vram;
 VRAMRegion* stg8_vram;
 VRAMRegion* bsod_vram;
 
-fix32 player_x = FIX32(0);
+fix32 player_x = FIX32(16);
 fix32 player_y = FIX32(352);
-fix32 player_spd_x;
-fix32 player_spd_y;
-fix32 player_jump;
+fix16 player_spd_x;
+fix16 player_spd_y;
+const u8 jumpMax = 50;
 bool paused = FALSE;
 bool isJumping = FALSE;
 bool isGrounded = TRUE;
@@ -40,7 +40,7 @@ const u32 mapHeights[lvlMax] =
 };
 s16 new_cam_x;
 s16 new_cam_y;
-const char playerNames[7][10] = {"Jade","Stephanie","Emma","Selina","Alexia","Christina","Vanellope"};
+const char playerNames[7][9] = {"Jade","Stephanie","Emma","Selina","Alexia","Jessica","Vanellope"};
 
 static u8 sPosToTPos(u8 basePos)
 {
@@ -63,24 +63,34 @@ static void pauseChk()
     {
     case FALSE:
     {
-        XGM_startPlayPCM(64,0,SOUND_PCM_CH2);
+        XGM_startPlayPCM(64,15,SOUND_PCM_CH2);
         XGM_resumePlay();
         sPlayer->timer = 12;
-        PAL_getColors(0,uncPal,64);
-        for (u8 i = 0; i < 64; i++)
+        switch (round)
         {
-            PAL_setColor(i,uncPal[i]*2);
+        case 8:
+        {
+            aplib_unpack(test_palette,uncPal);
+            break;
         }
+        default:
+        {
+            aplib_unpack(test_palette,uncPal);
+            break;
+        }
+        }
+        PAL_setColors(0,uncPal,64,DMA);
         JOY_setEventHandler(&gameInputHdl);
         break;
     }
     case TRUE:
     {
-        XGM_startPlayPCM(65,0,SOUND_PCM_CH2);
+        XGM_startPlayPCM(65,15,SOUND_PCM_CH2);
         XGM_pausePlay();
         sPlayer->timer = 0;
         player_spd_x = 0;
         player_spd_y = 0;
+        PAL_interruptFade();
         PAL_getColors(0,uncPal,64);
         for (u8 i = 0; i < 64; i++)
         {
@@ -137,7 +147,7 @@ static void spawnPlayer()
         }
         case 5:
         {
-            aplib_unpack(christina_pal,uncPal);
+            aplib_unpack(jessica_pal,uncPal);
             PAL_setPalette(PAL3,uncPal,DMA);
             sPlayer = SPR_addSprite(&lucy,player_x,player_y,TILE_ATTR(PAL3,FALSE,FALSE,FALSE));
             break;
@@ -160,7 +170,7 @@ static void joyEvent_BSOD(u16 joy, u16 changed, u16 state)
     }
 }
 
-void killExec(char err[39])
+void killExec(const char err[])
 {
     for (u8 i = 0; i <= 3; i++)
     {
@@ -226,21 +236,17 @@ static void spawnHUD()
 
 static void playerJump()
 {
+    if (isGrounded != TRUE)
+    {
+        return;
+    }
+    if (isJumping != TRUE)
+    {
+        return;
+    }
     XGM_setPCM(64,jump_sfx,sizeof(jump_sfx));
-    if (isGrounded == TRUE)
-    {
-        if (isJumping == TRUE)
-        {
-            XGM_startPlayPCM(64,15,SOUND_PCM_CH2);
-            isJumping = !isJumping;
-        }
-        else
-        {
-        }
-    }
-    else
-    {
-    }
+    XGM_startPlayPCM(64,15,SOUND_PCM_CH2);
+    isJumping = !isJumping;
 }
 
 static void pauseInputHdl(u16 joy, u16 changed, u16 state)
@@ -363,7 +369,7 @@ static void playerPos()
     }
 }
 
-static void drawIntToHex(s32 value, const char destStr, u8 minChr, u8 x, u8 y)
+static void drawIntToHex(s32 value, const char destStr[], u8 minChr, u8 x, u8 y)
 {
     intToHex(value, destStr, minChr);
     VDP_drawTextEx(WINDOW,destStr,TILE_ATTR(PAL3,TRUE,FALSE,FALSE),x,y,DMA);
@@ -371,16 +377,18 @@ static void drawIntToHex(s32 value, const char destStr, u8 minChr, u8 x, u8 y)
 
 static void updateHUD()
 {
-    char livesStr[3] = "05";
-    char scoreStr[7] = "000000";
-    char z80Str[3] = "00";
-    char pxStr[3], pyStr[3], cxStr[3], cyStr[3];
-    char pauseStr[3] = "00";
-    char healthStr[3] = "00";
-    char jmpStr[3] = "00";
-    char gndStr[3] = "00";
+    char livesStr[3];
+    char scoreStr[7];
+    char z80Str[3];
+    char pxStr[3], pyStr[3];
+    char pauseStr[3];
+    char healthStr[3];
+    char jmpStr[3];
+    char gndStr[3];
+    char memStr[5];
+    char sprStr[3];
     u8 z80ld = XGM_getCPULoad();
-    if (z80ld > 100)
+    if (z80ld >= 100)
     {
         Z80_unloadDriver();
         Z80_loadDriver(Z80_DRIVER_XGM,TRUE);
@@ -403,9 +411,9 @@ static void updateHUD()
     s16 py = fix32ToInt(player_y);
     u16 mem = MEM_getFree();
     u8 sprAmnt = SPR_getNumActiveSprite();
-    intToStr(sprAmnt,livesStr,2);
+    intToStr(lives,livesStr,2);
     VDP_drawTextEx(WINDOW,livesStr,TILE_ATTR(PAL3,TRUE,FALSE,FALSE),livesStrX,1,DMA);
-    intToStr(mem,scoreStr,6);
+    intToStr(score,scoreStr,6);
     VDP_drawTextEx(WINDOW,scoreStr,TILE_ATTR(PAL3,TRUE,FALSE,FALSE),scoreStrX,0,DMA);
     drawIntToHex(z80ld,z80Str,2,fpsStrX,0);
     drawIntToHex(px,pxStr,4,fpsStrX+3,0);
@@ -414,6 +422,8 @@ static void updateHUD()
     drawIntToHex(isJumping,jmpStr,2,fpsStrX+5,1);
     drawIntToHex(isGrounded,gndStr,2,fpsStrX+7,1);
     drawIntToHex(health,healthStr,2,fpsStrX+9,1);
+    drawIntToHex(mem,memStr,4,fpsStrX+12,0);
+    drawIntToHex(sprAmnt,sprStr,2,fpsStrX+16,0);
 }
 
 static void drawLevel()
@@ -436,6 +446,7 @@ static void drawLevel()
     }
     default:
     {
+        killExec("Level ID > 8!");
         break;
     }
     }

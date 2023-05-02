@@ -24,6 +24,7 @@ WAV menu_sel_sfx "pcm/select.wav" PCM
 WAV sel_xgm "pcm/select.wav" XGM   
 WAV stab_sfx "pcm/stab.wav" XGM 
 WAV life_sfx "pcm/1up.wav" XGM
+WAV stop_sfx "pcm/Skidding.wav" XGM
 #-----------------------------------------
 WAV fem_die "pcm/girl_ded.wav" XGM
 WAV kikoku "pcm/girl_egrgball.wav" XGM 

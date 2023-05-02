@@ -3,6 +3,7 @@
 extern Sprite* cursor_cst;
 enum numOpts {optNum = 14, mainNum = 3};
 enum maxVals {scoreMax = 999990, livesMax = 99, lvlMax = 8, plrIDMax = 5};
+enum srmOffsets {lvlSrm, lsSrm, livesSrm, diffSrm, plrSrm, scoreSrm};
 enum xposes {optX = 23, mainX = 13};
 enum yposes {optY = 12, mainY = 13};
 

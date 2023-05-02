@@ -26,6 +26,7 @@ extern const u8 menu_sel_sfx[12544];
 extern const u8 sel_xgm[15872];
 extern const u8 stab_sfx[2560];
 extern const u8 life_sfx[53504];
+extern const u8 stop_sfx[5120];
 extern const u8 fem_die[10240];
 extern const u8 kikoku[12032];
 extern const u8 fem_kick[4096];
