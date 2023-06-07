@@ -7,7 +7,7 @@ enum vdpViewport {horzRes = 320, vertRes = 224};
 enum playerSize {playerWidth = 32, playerHeight = 32};
 
 Sprite* sPlayer;
-Sprite* healthbar[17];
+Sprite* healthbar;
 Sprite* icon;
 Map* lvlBG;
 Map* lvlFG;
@@ -19,17 +19,16 @@ VRAMRegion* stg5_vram;
 VRAMRegion* stg6_vram;
 VRAMRegion* stg7_vram;
 VRAMRegion* stg8_vram;
-VRAMRegion* bsod_vram;
 
-fix32 player_x = FIX32(16);
-fix32 player_y = FIX32(352);
+fix32 player_x;
+fix32 player_y;
 fix16 player_spd_x;
 fix16 player_spd_y;
-const u8 jumpMax = 50;
-bool paused = FALSE;
-bool isJumping = FALSE;
-bool isGrounded = TRUE;
-u8 health = 128;
+const u8 jumpMax = 48;
+bool paused;
+bool isJumping;
+bool isGrounded;
+u8 health;
 const u32 mapWidths[lvlMax] = 
 {
     0,0,0,0,0,0,0,1280
@@ -40,63 +39,31 @@ const u32 mapHeights[lvlMax] =
 };
 s16 new_cam_x;
 s16 new_cam_y;
-const char playerNames[7][9] = {"Jade","Stephanie","Emma","Selina","Alexia","Jessica","Vanellope"};
+const char playerNames[7][9] = {"Jade","Stephanie","Emma","Selina","Christina","Carolyn","Vanellope"};
 
-static u8 sPosToTPos(u8 basePos)
+static u16 sPosToTPos(u8 basePos)
 {
     return basePos * 8;
 }
 
-
-static void sprDealloc()
-{
-    SPR_end();
-    SPR_init();
-}
-
-
 static void pauseChk()
 {
-    XGM_setPCM(64,back_xgm,sizeof(back_xgm));
-    XGM_setPCM(65,sel_xgm,sizeof(sel_xgm));
     switch (paused)
     {
     case FALSE:
     {
-        XGM_startPlayPCM(64,15,SOUND_PCM_CH2);
         XGM_resumePlay();
         sPlayer->timer = 12;
-        switch (round)
-        {
-        case 8:
-        {
-            aplib_unpack(test_palette,uncPal);
-            break;
-        }
-        default:
-        {
-            aplib_unpack(test_palette,uncPal);
-            break;
-        }
-        }
-        PAL_setColors(0,uncPal,64,DMA);
-        JOY_setEventHandler(&gameInputHdl);
+        JOY_setEventHandler(gameInputHdl);
         break;
     }
     case TRUE:
     {
-        XGM_startPlayPCM(65,15,SOUND_PCM_CH2);
         XGM_pausePlay();
         sPlayer->timer = 0;
         player_spd_x = 0;
         player_spd_y = 0;
-        PAL_interruptFade();
-        PAL_getColors(0,uncPal,64);
-        for (u8 i = 0; i < 64; i++)
-        {
-            PAL_setColor(i,uncPal[i]/2);
-        }
-        JOY_setEventHandler(&pauseInputHdl);
+        JOY_setEventHandler(pauseInputHdl);
         break;
     }
     default:
@@ -112,117 +79,45 @@ static void spawnPlayer()
     {
         case 0:
         {
-            aplib_unpack(lucy_pal,uncPal);
-            PAL_setPalette(PAL3,uncPal,DMA);
             sPlayer = SPR_addSprite(&lucy,fix16ToInt(player_x),fix16ToInt(player_y),TILE_ATTR(PAL3,FALSE,FALSE,FALSE));
             break;
         }
         case 1:
         {
-            aplib_unpack(stephanie_pal,uncPal);
-            PAL_setPalette(PAL3,uncPal,DMA);
             sPlayer = SPR_addSprite(&lucy,player_x,player_y,TILE_ATTR(PAL3,FALSE,FALSE,FALSE));
             break;
         }
         case 2:
         {
-            aplib_unpack(emma_pal,uncPal);
-            PAL_setPalette(PAL3,uncPal,DMA);
             sPlayer = SPR_addSprite(&lucy,player_x,player_y,TILE_ATTR(PAL3,FALSE,FALSE,FALSE));
             break;
         }
         case 3:
         {
-            aplib_unpack(selina_pal,uncPal);
-            PAL_setPalette(PAL3,uncPal,DMA);
             sPlayer = SPR_addSprite(&lucy,player_x,player_y,TILE_ATTR(PAL3,FALSE,FALSE,FALSE));
             break;
         }
         case 4:
         {
-            aplib_unpack(alexia_pal,uncPal);
-            PAL_setPalette(PAL3,uncPal,DMA);
             sPlayer = SPR_addSprite(&lucy,player_x,player_y,TILE_ATTR(PAL3,FALSE,FALSE,FALSE));
             break;
         }
         case 5:
         {
-            aplib_unpack(jessica_pal,uncPal);
-            PAL_setPalette(PAL3,uncPal,DMA);
             sPlayer = SPR_addSprite(&lucy,player_x,player_y,TILE_ATTR(PAL3,FALSE,FALSE,FALSE));
             break;
         }
         default:
         {
-            aplib_unpack(emma_pal,uncPal);
-            PAL_setPalette(PAL3,uncPal,DMA);
             sPlayer = SPR_addSprite(&lucy,player_x,player_y,TILE_ATTR(PAL3,FALSE,FALSE,FALSE));
             break;
         }
     }
 }
 
-static void joyEvent_BSOD(u16 joy, u16 changed, u16 state)
-{
-    if (changed & state & BUTTON_START)
-    {
-        SYS_hardReset();
-    }
-}
-
-void killExec(const char err[])
-{
-    for (u8 i = 0; i <= 3; i++)
-    {
-        PAL_setPalette(i,palette_black,DMA);
-    }
-    VRAM_createRegion(&bsod_vram,TILE_USER_INDEX,32);
-    ind[12] = VRAM_alloc(&bsod_vram,32);
-    aplib_unpack(bsod_palette,uncPal);
-    PAL_fadeIn(0,31,uncPal,30,TRUE);
-    VDP_clearPlane(BG_A,TRUE);
-    VDP_clearPlane(BG_B,TRUE);
-    VDP_clearPlane(WINDOW,TRUE);
-    VDP_setWindowVPos(FALSE,0);
-    SPR_end();
-    XGM_stopPlay();
-    PSG_reset();
-    u8 consoleRegion = *(u8 *)0xA10001;
-    VDP_drawImageEx(BG_A,&bsod_frown,TILE_ATTR_FULL(PAL1,FALSE,FALSE,FALSE,ind[12]),1,1,FALSE,TRUE);
-    if (consoleRegion == ntscUSA)
-    {
-        VDP_drawTextEx(BG_A,"Your Genesis has ran into a problem",TILE_ATTR(PAL0,FALSE,FALSE,FALSE),1,9,DMA);
-    }
-    else
-    {
-        VDP_drawTextEx(BG_A,"Your Megadrive has ran into a problem",TILE_ATTR(PAL0,FALSE,FALSE,FALSE),1,9,DMA);
-    }
-    VDP_drawTextEx(BG_A,"and needs to restart. We're just",TILE_ATTR(PAL0,FALSE,FALSE,FALSE),1,10,DMA);
-    VDP_drawTextEx(BG_A,"collecting some error info, and then",TILE_ATTR(PAL0,FALSE,FALSE,FALSE),1,11,DMA);
-    VDP_drawTextEx(BG_A,"You can press START to restart.",TILE_ATTR(PAL0,FALSE,FALSE,FALSE),1,12,DMA);
-    VDP_drawTextEx(BG_A,"If you would like to know more, here",TILE_ATTR(PAL0,FALSE,FALSE,FALSE),1,14,DMA);
-    VDP_drawTextEx(BG_A,"is the error in question:",TILE_ATTR(PAL0,FALSE,FALSE,FALSE),1,15,DMA);
-    VDP_drawTextEx(BG_A,err,TILE_ATTR(PAL0,FALSE,FALSE,FALSE),1,17,DMA);
-    XGM_setPCM(64,testxgm,sizeof(testxgm));
-    XGM_startPlayPCM(64,15,SOUND_PCM_CH1);
-    JOY_setEventHandler(joyEvent_BSOD);
-    while (1)
-    {
-        SYS_doVBlankProcess();
-        XGM_nextFrame();
-    }
-}
-
 static void spawnHUD()
 {
-    u8 i = 0;
-    for (i; i < 16; i++)
-    {
-        healthbar[i] = SPR_addSprite(&bars,sPosToTPos(2+i),sPosToTPos(1),TILE_ATTR(PAL3,FALSE,FALSE,FALSE));
-        SPR_setAnimAndFrame(healthbar[i],1,8);
-    }
-    healthbar[17] = SPR_addSprite(&bars,sPosToTPos(2+i),sPosToTPos(1),TILE_ATTR(PAL3,FALSE,FALSE,FALSE));
-    SPR_setAnim(healthbar[17],3);
+    healthbar = SPR_addSprite(&bars,sPosToTPos(2),sPosToTPos(1),TILE_ATTR(PAL3,FALSE,FALSE,FALSE));
     VDP_setWindowVPos(FALSE,2);
     if (player_ci > 5)
     {
@@ -232,6 +127,7 @@ static void spawnHUD()
     icon = SPR_addSprite(&plr_icns,0,0,TILE_ATTR(PAL3,FALSE,FALSE,FALSE));
     SPR_setAnim(icon,player_ci);
     VDP_drawTextEx(WINDOW,"{",TILE_ATTR(PAL3,TRUE,FALSE,FALSE),scoreStrX-1,0,DMA);
+    VDP_drawTextEx(WINDOW,"|",TILE_ATTR(PAL3,TRUE,FALSE,FALSE),18,1,DMA);
 }
 
 static void playerJump()
@@ -276,6 +172,18 @@ static void gameInputHdl(u16 joy, u16 changed, u16 state)
     {
         SPR_setAnim(sPlayer,idleAnim);
         player_spd_x = FIX32(0);
+    }
+    if (state & BUTTON_UP)
+    {
+        player_spd_y = FIX32(-1);
+    }
+    else if (state & BUTTON_DOWN)
+    {
+        player_spd_y = FIX32(1);
+    }
+    else
+    {
+        player_spd_y = FIX32(0);
     }
     if (changed & state & BUTTON_C)
     {
@@ -390,22 +298,7 @@ static void updateHUD()
     u8 z80ld = XGM_getCPULoad();
     if (z80ld >= 100)
     {
-        Z80_unloadDriver();
-        Z80_loadDriver(Z80_DRIVER_XGM,TRUE);
-        switch (round)
-        {
-        case 8:
-        {
-            XGM_startPlay(testtrck);
-            break;
-        }
-        default:
-        {
-            XGM_setPCM(64,testxgm,sizeof(testxgm));
-            XGM_startPlayPCM(64,15,SOUND_PCM_CH1);
-            break;
-        }
-        }
+        killExec(z80Overload);
     }
     s16 px = fix32ToInt(player_x);
     s16 py = fix32ToInt(player_y);
@@ -424,6 +317,7 @@ static void updateHUD()
     drawIntToHex(health,healthStr,2,fpsStrX+9,1);
     drawIntToHex(mem,memStr,4,fpsStrX+12,0);
     drawIntToHex(sprAmnt,sprStr,2,fpsStrX+16,0);
+    SPR_setFrame(healthbar,health);
 }
 
 static void drawLevel()
@@ -432,21 +326,25 @@ static void drawLevel()
     {
     case 8:
     {
-        VRAM_free(&options_vram,ind[2]);
+        VRAM_free(&options_vram,ind);
         VRAM_clearRegion(&options_vram);
+        VRAM_releaseRegion(&options_vram);
         VRAM_createRegion(&stg1_vram,TILE_USER_INDEX,192);
-        aplib_unpack(test_palette,uncPal);
-        ind[3] = VRAM_alloc(&stg1_vram,192);
-        fadeInPalette(uncPal,palette_black,30,TRUE);
-        VDP_loadTileSet(&test_tiles,ind[3],DMA);
-        lvlBG = MAP_create(&test_bg,BG_B,TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,ind[3]));
-        lvlFG = MAP_create(&test_fg,BG_A,TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,ind[3]));
-        XGM_startPlay(testtrck);
+        ind = VRAM_alloc(&stg1_vram,192);
+        fadeInPalette(test_palette,player_palettes[player_ci],30,TRUE);
+        player_x = FIX32(16);
+        player_y = FIX32(352);
+        VDP_loadTileSet(&test_tiles,ind,DMA);
+        lvlBG = MAP_create(&test_bg,BG_B,TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,ind));
+        lvlFG = MAP_create(&test_fg,BG_A,TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,ind));
+        MEM_free(lvlFG);
+        MEM_free(lvlFG);
+        XGM_startPlay(testtrck); 
         break;
     }
     default:
     {
-        killExec("Level ID > 8!");
+        killExec(lvlOutOfRange);
         break;
     }
     }
@@ -454,13 +352,18 @@ static void drawLevel()
 
 void gameInit()
 {
-    player_spd_x = FIX32(0);
-    sprDealloc();
-    spawnHUD();
+    player_spd_x = FIX16(0);
+    player_spd_y = FIX16(0);
+    health = 32;
+    paused = FALSE;
+    isJumping = FALSE;
+    isGrounded = TRUE;
+    SPR_reset();
     drawLevel();
     spawnPlayer();
+    spawnHUD();
     playerPos();
-    JOY_setEventHandler(&gameInputHdl);
+    JOY_setEventHandler(gameInputHdl);
     while(1)
     {
         camPos();

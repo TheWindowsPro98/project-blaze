@@ -3,8 +3,8 @@
 VRAMRegion* sega_scrn;
 VRAMRegion* title_vram;
 VRAMRegion* options_vram;
-u16 ind[12]; // 0 - Sega Screen, 1 - Title Logo, 2 - Main Menu Background, 3-11 - Stage Graphics, 12 - BSOD frown
-u16 uncPal[64];
+u16 ind; // VRAM Index
+bool memAllocated = FALSE;
 
 const Option menu_main[mainNum] = {
 	{mainX, mainY, "New Game"},
@@ -14,33 +14,33 @@ const Option menu_main[mainNum] = {
 
 static void mainCurUpd()
 {
-    SPR_setPosition(cursor_cst, menu_main[currentIndex].x*8-8, menu_main[currentIndex].y*8);
+    SPR_setPosition(cursor_cst, menu_main[*currentIndex].x*8-8, menu_main[*currentIndex].y*8);
 }
 
 static void curMoveUpMain()
 {
-    if(currentIndex > 0)
+    if(*currentIndex > 0)
     {
-        currentIndex--;
+        *currentIndex -= 1;
         mainCurUpd();
     }
-    else if (currentIndex == 0)
+    else if (*currentIndex == 0)
     {
-        currentIndex = mainNum-1;
+        *currentIndex = mainNum-1;
         mainCurUpd();
     }
 }
 
 static void curMoveDownMain()
 {
-    if(currentIndex < mainNum-1)
+    if(*currentIndex < mainNum-1)
     {
-        currentIndex++;
+        *currentIndex += 1;
         mainCurUpd();
     }
-    else if (currentIndex == mainNum-1)
+    else if (*currentIndex == mainNum-1)
     {
-        currentIndex = 0;
+        *currentIndex = 0;
         mainCurUpd();
     }
 }
@@ -71,9 +71,9 @@ static void selectOptMain(u16 Option)
 
 static void joyEvent_Title(u16 joy, u16 changed, u16 state)
 {
-	if (state & BUTTON_START)
+	if (changed & state & BUTTON_START)
 	{
-		SND_startPlay_PCM(&menu_sel_sfx, sizeof(menu_sel_sfx),SOUND_RATE_11025,SOUND_PAN_CENTER,FALSE);
+		SND_startPlay_PCM(select,sizeof(select),SOUND_RATE_13400,SOUND_PAN_CENTER,FALSE);
 		SPR_init();
 		mainscrn();
 	}
@@ -83,74 +83,57 @@ static void joyEvent_ms(u16 joy, u16 changed, u16 state)
 {
 	if (changed & state & BUTTON_UP)
 	{
-		SND_startPlay_PCM(&menu_hvr,sizeof(menu_hvr),SOUND_RATE_11025,SOUND_PAN_CENTER,FALSE);
+		SND_startPlay_PCM(hover,sizeof(hover),SOUND_RATE_13400,SOUND_PAN_CENTER,FALSE);
 		curMoveUpMain();
 	}
 	else if (changed & state & BUTTON_DOWN)
 	{
-		SND_startPlay_PCM(&menu_hvr,sizeof(menu_hvr),SOUND_RATE_11025,SOUND_PAN_CENTER,FALSE);
+		SND_startPlay_PCM(hover,sizeof(hover),SOUND_RATE_13400,SOUND_PAN_CENTER,FALSE);
 		curMoveDownMain();
 	}
 	if (changed & state & BUTTON_START)
 	{
-		SND_startPlay_PCM(&menu_sel_sfx, sizeof(menu_sel_sfx),SOUND_RATE_11025,SOUND_PAN_CENTER,FALSE);
-		selectOptMain(currentIndex);
+		SND_startPlay_PCM(select,sizeof(select),SOUND_RATE_13400,SOUND_PAN_CENTER,FALSE);
+		selectOptMain(*currentIndex);
 	}
-}
-
-static void srmDefaults()
-{
-	SYS_disableInts();
-	SRAM_enable();
-	if (score > scoreMax || lives > livesMax || round > lvlMax)
-	{
-		score = 0x000000;
-		lives = 0x05;
-		round = 0x08;
-		lsul = FALSE;
-		player_ci = 0x02;
-		difficulty = 0x01;
-		SRAM_writeLong(scoreSrm,score);
-		SRAM_writeByte(livesSrm,lives);
-		SRAM_writeByte(lvlSrm,round);
-		SRAM_writeByte(lsSrm,lsul);
-		SRAM_writeByte(plrSrm,player_ci);
-		SRAM_writeByte(diffSrm,difficulty);
-	}
-	SRAM_disable();
-	SYS_enableInts();
 }
 
 void mainscrn()
 {
+	if (memAllocated == FALSE)
+	{
+		ind = VRAM_alloc(&title_vram,440);
+		currentIndex = MEM_alloc(sizeof(u8));
+		mapScrl = MEM_alloc(sizeof(fix16));
+		sndIndex = MEM_alloc(sizeof(u8));
+		memAllocated = TRUE;
+	}
 	char scoreStr[6];
-	mapScrl = 0;
-	VDP_releaseAllSprites();
-	VRAM_free(&title_vram, ind[1]);
+	*mapScrl = 0;
+	VRAM_free(&title_vram, ind);
+	VRAM_clearRegion(&title_vram);
 	VRAM_clearRegion(&title_vram);
 	VRAM_createRegion(&options_vram,TILE_USER_INDEX,18);
-	ind[2] = VRAM_alloc(&options_vram, 18);
-	currentIndex = 0;
-	aplib_unpack(options_pal,uncPal);
-	fadeInPalette(uncPal,palette_black,30,TRUE);
-	aplib_unpack(lucy_pal,uncPal);
-	PAL_setPalette(PAL3,uncPal,DMA);
+	ind = VRAM_alloc(&options_vram, 18);
+	*currentIndex = 0;
 	SPR_init();
-	cursor_cst = SPR_addSprite(&cursor,0,0,TILE_ATTR(PAL3,TRUE,FALSE,FALSE));
+	cursor_cst = SPR_addSprite(&cursor,320,0,TILE_ATTR(PAL3,TRUE,FALSE,FALSE));
+	cursor_cnf = SPR_addSprite(&cursor,328,0,TILE_ATTR(PAL0,FALSE,FALSE,FALSE));
+	cursor_plr = SPR_addSprite(&cursor,336,0,TILE_ATTR(PAL0,FALSE,FALSE,FALSE));
+	fadeInPalette(options_pal,player_palettes[1],30,TRUE);
 	VDP_clearPlane(BG_A,TRUE);
-	VDP_loadTileSet(&opts_tiles,ind[2],DMA);
-	VDP_setTileMapEx(BG_B,&options_map,TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,ind[2]),0,0,0,0,64,28,DMA);
+	VDP_loadTileSet(&opts_tiles,ind,DMA);
+	VDP_setTileMapEx(BG_B,&options_map,TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,ind),0,0,0,0,64,28,DMA);
 	VDP_setScrollingMode(HSCROLL_PLANE,VSCROLL_PLANE);
 	SYS_disableInts();
 	SRAM_enable();
 	score = SRAM_readLong(scoreSrm);
 	SRAM_disable();
 	SYS_enableInts();
-	srmDefaults();
 	intToStr(score,scoreStr,6);
 	VDP_drawTextEx(BG_A,"Score:",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),0,27,DMA);
 	VDP_drawTextEx(BG_A,scoreStr,TILE_ATTR(PAL3,FALSE,FALSE,FALSE),7,27,DMA);
-	JOY_setEventHandler(&joyEvent_ms);
+	JOY_setEventHandler(joyEvent_ms);
 	mainCurUpd();
 	for (u8 i = 0; i < mainNum; i++)
 	{
@@ -159,42 +142,42 @@ void mainscrn()
 	}
 	while(1)
 	{
-		mapScrl -= FIX16(0.3334);
-		XGM_nextFrame();
-		VDP_setHorizontalScroll(BG_B,fix16ToRoundedInt(mapScrl));
+		*mapScrl -= FIX16(0.3334);
+		VDP_setHorizontalScroll(BG_B,fix16ToRoundedInt(*mapScrl));
 		SPR_update();
 		SYS_doVBlankProcess();
 	}
 }
 static void title()
 {
-	VRAM_free(&sega_scrn,ind[0]);
+	VRAM_free(&sega_scrn,ind);
 	VRAM_clearRegion(&sega_scrn);
+	VRAM_releaseRegion(&sega_scrn);
 	VDP_clearPlane(BG_A,TRUE);
-	fadeInPalette(title_logo.palette->data,uncPal,30,TRUE);
+	fadeInPalette(title_pal,player_palettes,30,TRUE);
 	VRAM_createRegion(&title_vram,TILE_USER_INDEX,440);
-	ind[1] = VRAM_alloc(&title_vram,440);
-	VDP_drawImageEx(BG_A,&title_logo,TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,ind[1]),0,0,FALSE,TRUE);
+	VDP_drawImageEx(BG_A,&title_logo,TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,ind),0,0,FALSE,TRUE);
 	VDP_drawTextEx(BG_A, "} TWP98 2022-2023", TILE_ATTR(PAL3,FALSE,FALSE,FALSE),0,27,DMA);
 	VDP_drawTextEx(BG_A, "Version pa5.16",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),12,12,DMA);
 	VDP_drawTextEx(BG_A,"PRESS  START",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),13,13,DMA);
-	XGM_setManualSync(TRUE);
 	XGM_startPlay(titlevgm);
-	JOY_setEventHandler(&joyEvent_Title);
+	JOY_setEventHandler(joyEvent_Title);
 	while (1)
 	{
 		SYS_doVBlankProcess();
-		XGM_nextFrame();
 	}
 }
 
-void fadeInPalette(Palette* fadePalette, Palette* staticPalette, u8 fadeTime, bool async)
+void fadeInPalette(u16 fadePalette[48], u16 staticPalette[16], u8 fadeTime, bool async)
 {
-	PAL_setPalette(PAL3,staticPalette,DMA);
+	u16 finalPalette[64];
 	PAL_setPalette(PAL0,palette_black,DMA);
 	PAL_setPalette(PAL1,palette_black,DMA);
 	PAL_setPalette(PAL2,palette_black,DMA);
-	PAL_fadeIn(0,47,fadePalette,fadeTime,async);
+	PAL_setPalette(PAL3,palette_black,DMA);
+	memcpy(&finalPalette[0],fadePalette,48*sizeof(u16));
+	memcpy(&finalPalette[48],staticPalette,16*sizeof(u16));
+	PAL_fadeInAll(finalPalette,fadeTime,async);
 }
 
 static void joyEvent_SEGA(u16 joy, u16 changed, u16 state)
@@ -212,23 +195,24 @@ int main(bool resetType)
 {
 	u8 consoleType = getConsoleRegion();
 	char ctStrs[4][35] = {"This game is not optimized for PAL","consoles.","Hell, I didn't even know Japan had","PAL consoles."};
-	aplib_unpack(lucy_pal,uncPal);
-	fadeInPalette(sega_logo.palette->data,uncPal,30,TRUE);
+	fadeInPalette(sega_pal,player_palettes[5],30,TRUE);
 	VDP_loadFont(custom_font.tileset,DMA);
 	switch (consoleType)
 	{
 	case palEUR:
 	{
-		VDP_drawTextEx(BG_A,ctStrs[0],TILE_ATTR(PAL3,FALSE,FALSE,FALSE),0,0,DMA);
-		VDP_drawTextEx(BG_A,ctStrs[1],TILE_ATTR(PAL3,FALSE,FALSE,FALSE),0,1,DMA);
+		for (u8 i = 0; i < 2; i++)
+		{
+			VDP_drawTextEx(BG_A,ctStrs[i],TILE_ATTR(PAL3,FALSE,FALSE,FALSE),0,i,DMA);
+		}
 		break;
 	}
 	case palJPN:
 	{
-		VDP_drawTextEx(BG_A,ctStrs[0],TILE_ATTR(PAL3,FALSE,FALSE,FALSE),0,0,DMA);
-		VDP_drawTextEx(BG_A,ctStrs[1],TILE_ATTR(PAL3,FALSE,FALSE,FALSE),0,1,DMA);
-		VDP_drawTextEx(BG_A,ctStrs[2],TILE_ATTR(PAL3,FALSE,FALSE,FALSE),0,3,DMA);
-		VDP_drawTextEx(BG_A,ctStrs[3],TILE_ATTR(PAL3,FALSE,FALSE,FALSE),0,4,DMA);
+		for (u8 i = 0; i < 4; i++)
+		{
+			VDP_drawTextEx(BG_A,ctStrs[i],TILE_ATTR(PAL3,FALSE,FALSE,FALSE),0,i,DMA);
+		}
 		break;
 	}
 	default:
@@ -238,21 +222,18 @@ int main(bool resetType)
 	}
 	if (resetType == 0)
 	{
-		SYS_hardReset();
+		killExec(genericErr);
 	}
-	VRAM_createRegion(&sega_scrn,TILE_USER_INDEX,48);
-	ind[0] = VRAM_alloc(&sega_scrn,48);
-	VDP_drawImageEx(BG_A, &sega_logo,TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,ind[0]), 12, 12, FALSE, TRUE);
-	XGM_setPCM(64,segaxgm,sizeof(segaxgm));
-	XGM_startPlayPCM(64,15,SOUND_PCM_CH1);
-	JOY_setEventHandler(&joyEvent_SEGA);
-	waitMs(2408);
+	VRAM_createRegion(&sega_scrn,TILE_USER_INDEX,56);
+	ind = VRAM_alloc(&sega_scrn,56);
+	VDP_drawImageEx(BG_A, &sega_logo,TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,ind), 12, 12, FALSE, TRUE);
+	SND_startPlay_PCM(segapcm,sizeof(segapcm),SOUND_RATE_13400,SOUND_PAN_CENTER,FALSE);
+	JOY_setEventHandler(joyEvent_SEGA);
+	waitMs(2048);
 	PAL_fadeOutAll(30,FALSE);
 	title();
 	while(1)
 	{   
 		SYS_doVBlankProcess();
-		XGM_nextFrame();
 	}
-	return 0;
 }
