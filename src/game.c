@@ -2,7 +2,7 @@
 
 enum hudPos {livesStrX = 19, scoreStrX = 12, fpsStrX = 19};
 enum playerAnim {idleAnim, walkAnim, jumpAnim};
-enum camScrlBounds {leftCamBnd = 135, rightCamBnd = 135, highCamBnd = 15, lowCamBnd = 127};
+enum camScrlBounds {leftCamBnd = 135, rightCamBnd = 135, highCamBnd = 127, lowCamBnd = 127};
 enum vdpViewport {horzRes = 320, vertRes = 224};
 enum playerSize {playerWidth = 32, playerHeight = 32};
 
@@ -11,14 +11,8 @@ Sprite* healthbar;
 Sprite* icon;
 Map* lvlBG;
 Map* lvlFG;
-VRAMRegion* stg1_vram;
-VRAMRegion* stg2_vram;
-VRAMRegion* stg3_vram;
-VRAMRegion* stg4_vram;
-VRAMRegion* stg5_vram;
-VRAMRegion* stg6_vram;
-VRAMRegion* stg7_vram;
-VRAMRegion* stg8_vram;
+VRAMRegion* stg_vram[lvlMax+1];
+VRAMRegion* windowgfx_vram;
 
 fix32 player_x;
 fix32 player_y;
@@ -28,7 +22,7 @@ const u8 jumpMax = 48;
 bool paused;
 bool isJumping;
 bool isGrounded;
-u8 health;
+fix16 health;
 const u32 mapWidths[lvlMax] = 
 {
     0,0,0,0,0,0,0,1280
@@ -39,9 +33,9 @@ const u32 mapHeights[lvlMax] =
 };
 s16 new_cam_x;
 s16 new_cam_y;
-const char playerNames[7][9] = {"Jade","Stephanie","Emma","Selina","Christina","Carolyn","Vanellope"};
+const char playerNames[7][10] = {"Jade","Stephanie","Emma","Selina","Christina","Carolyn","Vanellope"};
 
-static u16 sPosToTPos(u8 basePos)
+u16 sPosToTPos(u8 basePos)
 {
     return basePos * 8;
 }
@@ -117,17 +111,25 @@ static void spawnPlayer()
 
 static void spawnHUD()
 {
-    healthbar = SPR_addSprite(&bars,sPosToTPos(2),sPosToTPos(1),TILE_ATTR(PAL3,FALSE,FALSE,FALSE));
+    VDP_setScreenHeight240();
+    u16 basetile = TILE_ATTR(PAL3,FALSE,FALSE,FALSE);
+    u16 end = &stg_vram[round]->endIndex;
+    VRAM_createRegion(&windowgfx_vram,end,4);
+    ind = VRAM_alloc(&windowgfx_vram,4);
+    u16 basetileVRAM = TILE_ATTR_FULL(PAL3,FALSE,FALSE,FALSE,ind);
+    VDP_loadTileSet(&window_tiles,ind,DMA);
+    healthbar = SPR_addSprite(&bars,sPosToTPos(2),sPosToTPos(1),basetile);
     VDP_setWindowVPos(FALSE,2);
+    VDP_setTileMapEx(WINDOW,&window_map,basetileVRAM,0,0,0,0,40,2,DMA);
     if (player_ci > 5)
     {
         player_ci = 6;
     }
-    VDP_drawTextEx(WINDOW,playerNames[player_ci],TILE_ATTR(PAL3,TRUE,FALSE,FALSE),2,0,DMA);
-    icon = SPR_addSprite(&plr_icns,0,0,TILE_ATTR(PAL3,FALSE,FALSE,FALSE));
+    VDP_drawTextEx(WINDOW,playerNames[player_ci],basetile,2,0,DMA);
+    icon = SPR_addSprite(&plr_icns,0,0,basetile);
     SPR_setAnim(icon,player_ci);
-    VDP_drawTextEx(WINDOW,"{",TILE_ATTR(PAL3,TRUE,FALSE,FALSE),scoreStrX-1,0,DMA);
-    VDP_drawTextEx(WINDOW,"|",TILE_ATTR(PAL3,TRUE,FALSE,FALSE),18,1,DMA);
+    VDP_drawTextEx(WINDOW,"{",basetile,scoreStrX-1,0,DMA);
+    VDP_drawTextEx(WINDOW,"|",basetile,18,1,DMA);
 }
 
 static void playerJump()
@@ -280,7 +282,7 @@ static void playerPos()
 static void drawIntToHex(s32 value, const char destStr[], u8 minChr, u8 x, u8 y)
 {
     intToHex(value, destStr, minChr);
-    VDP_drawTextEx(WINDOW,destStr,TILE_ATTR(PAL3,TRUE,FALSE,FALSE),x,y,DMA);
+    VDP_drawTextEx(WINDOW,destStr,TILE_ATTR(PAL3,FALSE,FALSE,FALSE),x,y,DMA);
 }
 
 static void updateHUD()
@@ -304,20 +306,21 @@ static void updateHUD()
     s16 py = fix32ToInt(player_y);
     u16 mem = MEM_getFree();
     u8 sprAmnt = SPR_getNumActiveSprite();
+    u16 basetile = TILE_ATTR(PAL3,FALSE,FALSE,FALSE);
     intToStr(lives,livesStr,2);
-    VDP_drawTextEx(WINDOW,livesStr,TILE_ATTR(PAL3,TRUE,FALSE,FALSE),livesStrX,1,DMA);
+    VDP_drawTextEx(WINDOW,livesStr,basetile,livesStrX,1,DMA);
     intToStr(score,scoreStr,6);
-    VDP_drawTextEx(WINDOW,scoreStr,TILE_ATTR(PAL3,TRUE,FALSE,FALSE),scoreStrX,0,DMA);
+    VDP_drawTextEx(WINDOW,scoreStr,basetile,scoreStrX,0,DMA);
     drawIntToHex(z80ld,z80Str,2,fpsStrX,0);
     drawIntToHex(px,pxStr,4,fpsStrX+3,0);
     drawIntToHex(py,pyStr,4,fpsStrX+7,0);
     drawIntToHex(paused,pauseStr,2,fpsStrX+3,1);
     drawIntToHex(isJumping,jmpStr,2,fpsStrX+5,1);
     drawIntToHex(isGrounded,gndStr,2,fpsStrX+7,1);
-    drawIntToHex(health,healthStr,2,fpsStrX+9,1);
+    drawIntToHex(fix16ToRoundedInt(health),healthStr,2,fpsStrX+9,1);
     drawIntToHex(mem,memStr,4,fpsStrX+12,0);
     drawIntToHex(sprAmnt,sprStr,2,fpsStrX+16,0);
-    SPR_setFrame(healthbar,health);
+    SPR_setFrame(healthbar,fix16ToRoundedInt(health));
 }
 
 static void drawLevel()
@@ -329,8 +332,8 @@ static void drawLevel()
         VRAM_free(&options_vram,ind);
         VRAM_clearRegion(&options_vram);
         VRAM_releaseRegion(&options_vram);
-        VRAM_createRegion(&stg1_vram,TILE_USER_INDEX,192);
-        ind = VRAM_alloc(&stg1_vram,192);
+        VRAM_createRegion(&stg_vram[round],TILE_USER_INDEX,192);
+        ind = VRAM_alloc(&stg_vram[round],192);
         fadeInPalette(test_palette,player_palettes[player_ci],30,TRUE);
         player_x = FIX32(16);
         player_y = FIX32(352);
@@ -354,15 +357,15 @@ void gameInit()
 {
     player_spd_x = FIX16(0);
     player_spd_y = FIX16(0);
-    health = 32;
+    health = FIX16(32);
     paused = FALSE;
     isJumping = FALSE;
     isGrounded = TRUE;
-    SPR_reset();
     drawLevel();
     spawnPlayer();
     spawnHUD();
     playerPos();
+    VDP_loadFont(game_font.tileset,DMA);
     JOY_setEventHandler(gameInputHdl);
     while(1)
     {

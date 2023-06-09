@@ -3,7 +3,7 @@
 extern Sprite* cursor_cst;
 extern Sprite* cursor_cnf;
 extern Sprite* cursor_plr;
-enum numOpts {optNum = 14, mainNum = 3, pauseNum = 3};
+enum numOpts {optNum = 14, mainNum = 4};
 enum maxVals {scoreMax = 999990, livesMax = 99, lvlMax = 8, plrIDMax = 5};
 enum srmOffsets {lvlSrm, lsSrm, livesSrm, diffSrm, plrSrm, scoreSrm};
 enum xposes {optX = 23, mainX = 13, pauseX = 1};

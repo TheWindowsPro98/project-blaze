@@ -34,7 +34,7 @@ const Option menu_ops[optNum] = {
 
 void opsCurUpd()
 {
-    SPR_setPosition(cursor_cst,menu_ops[*currentIndex].x*8-8,menu_ops[*currentIndex].y*8);
+    SPR_setPosition(cursor_cst,sPosToTPos(menu_ops[*currentIndex].x)-8,sPosToTPos(menu_ops[*currentIndex].y));
 }
 
 static void curMoveUpOps()
@@ -67,15 +67,24 @@ static void curMoveDownOps()
 
 void pickSG()
 {
-    waitMs(1131);
+    waitMs(49);
     PAL_fadeOutAll(30,FALSE);
-    waitMs(1000);
     VDP_clearPlane(BG_A,TRUE);
     VDP_clearPlane(BG_B,TRUE);
-    VDP_clearSprites();
+    SPR_reset();
     MEM_free(mapScrl);
     MEM_free(sndIndex);
     MEM_free(currentIndex);
+    score = 0;
+    SYS_disableInts();
+    SRAM_enableRO();
+    lsul = SRAM_readByte(lsSrm);
+    SRAM_disable();
+    SYS_enableInts();
+    if (lsul == FALSE)
+    {
+        round = 8;
+    }
     gameInit();
 }
 
@@ -475,24 +484,26 @@ static void joyEvent_ops(u16 joy,u16 changed,u16 state)
 
 void pickOpts()
 {
-    char lsTxt[14] = "Stage Select:";
-    char livesStr[2] = "05";
-    char sndStr[3] = "000";
-    char lvlStr[2] = "00";
+    char lsTxt[14 ] = "Stage Select:";
+    char livesStr[3] = "05";
+    char sndStr[4] = "000";
+    char lvlStr[3] = "00";
     u8 z80ld = 0;
-    char z80str[3] = "000";
+    char z80str[4] = "000";
+    u16 basetile = TILE_ATTR(PAL3,FALSE,FALSE,FALSE);
+    u16 basetileDisabled = TILE_ATTR(PAL0,FALSE,FALSE,FALSE);
     *currentIndex = 0;
     *sndIndex = 0;
     VDP_clearPlane(BG_A,TRUE);
     fadeInPalette(options_pal,player_palettes[0],30,TRUE);
-    VDP_drawTextEx(BG_A,"Changes will only take effect upon",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),2,0,DMA);
-    VDP_drawTextEx(BG_A,"starting a new game.",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),2,1,DMA);
-    VDP_drawTextEx(BG_A,"Difficulty:",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),optX-13,optY-6,DMA);
-    VDP_drawTextEx(BG_A,"Player:",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),optX-13,optY-1,DMA);
-    VDP_drawTextEx(BG_A,"Lives:",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),optX-13,optY+6,DMA);
-    VDP_drawTextEx(BG_A,"Sound Test:",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),optX-13,optY+7,DMA);
-    VDP_drawTextEx(BG_A,"Z80 Load:",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),0,27,DMA);
-    VDP_drawTextEx(BG_A,"%",TILE_ATTR(PAL3,FALSE,FALSE,FALSE),13,27,DMA);
+    VDP_drawTextEx(BG_A,"Changes will only take effect upon",basetile,2,0,DMA);
+    VDP_drawTextEx(BG_A,"starting a new game.",basetile,2,1,DMA);
+    VDP_drawTextEx(BG_A,"Difficulty:",basetile,optX-13,optY-6,DMA);
+    VDP_drawTextEx(BG_A,"Player:",basetile,optX-13,optY-1,DMA);
+    VDP_drawTextEx(BG_A,"Lives:",basetile,optX-13,optY+6,DMA);
+    VDP_drawTextEx(BG_A,"Sound Test:",basetile,optX-13,optY+7,DMA);
+    VDP_drawTextEx(BG_A,"Z80 Load:",basetile,0,27,DMA);
+    VDP_drawTextEx(BG_A,"%",basetile,13,27,DMA);
     SYS_disableInts();
     SRAM_enableRO();
     lsul = SRAM_readByte(lsSrm);
@@ -501,20 +512,20 @@ void pickOpts()
     SYS_enableInts();
     if (lsul == FALSE)
     {
-        VDP_drawTextEx(BG_A,lsTxt,TILE_ATTR(PAL0,FALSE,FALSE,FALSE),optX-13,optY+8,DMA);
+        VDP_drawTextEx(BG_A,lsTxt,basetileDisabled,optX-13,optY+8,DMA);
     }
     else
     {
-        VDP_drawTextEx(BG_A,lsTxt,TILE_ATTR(PAL3,FALSE,FALSE,FALSE),optX-13,optY+8,DMA);
+        VDP_drawTextEx(BG_A,lsTxt,basetile,optX-13,optY+8,DMA);
     }
     for (u8 i = 0; i < optNum; i++)
     {
         Option o = menu_ops[i];
-        VDP_drawTextEx(BG_A,o.label,TILE_ATTR(PAL3,FALSE,FALSE,FALSE),o.x,o.y,DMA);
+        VDP_drawTextEx(BG_A,o.label,basetile,o.x,o.y,DMA);
     }
     JOY_setEventHandler(joyEvent_ops);
-    SPR_setPosition(cursor_cnf,menu_ops[difficulty].x*8-8,menu_ops[difficulty].y*8);
-    SPR_setPosition(cursor_plr,menu_ops[player_ci].x*8-8,menu_ops[player_ci+4].y*8);
+    SPR_setPosition(cursor_cnf,sPosToTPos(menu_ops[difficulty].x)-8,sPosToTPos(menu_ops[difficulty].y));
+    SPR_setPosition(cursor_plr,sPosToTPos(menu_ops[player_ci].x)-8,sPosToTPos(menu_ops[player_ci+4].y));
     opsCurUpd();
     while(1)
     {
@@ -522,21 +533,21 @@ void pickOpts()
         SYS_doVBlankProcess();
         XGM_nextFrame();
         intToStr(lives,livesStr,2);
-        VDP_drawTextEx(BG_A,livesStr,TILE_ATTR(PAL3,FALSE,FALSE,FALSE),optX+1,optY+6,DMA);
+        VDP_drawTextEx(BG_A,livesStr,basetile,optX+1,optY+6,DMA);
         intToStr(*sndIndex,sndStr,3);
-        VDP_drawTextEx(BG_A,sndStr,TILE_ATTR(PAL3,FALSE,FALSE,FALSE),optX,optY+7,DMA);
+        VDP_drawTextEx(BG_A,sndStr,basetile,optX,optY+7,DMA);
         intToStr(round,lvlStr,2);
         if (lsul == FALSE)
         {
-            VDP_drawTextEx(BG_A,lvlStr,TILE_ATTR(PAL0,FALSE,FALSE,FALSE),optX+1,optY+8,DMA);
+            VDP_drawTextEx(BG_A,lvlStr,basetileDisabled,optX+1,optY+8,DMA);
         }
         else
         {
-            VDP_drawTextEx(BG_A,lvlStr,TILE_ATTR(PAL3,FALSE,FALSE,FALSE),optX+1,optY+8,DMA);
+            VDP_drawTextEx(BG_A,lvlStr,basetile,optX+1,optY+8,DMA);
         }
         z80ld = XGM_getCPULoad();
         intToStr(z80ld,z80str,3);
-        VDP_drawTextEx(BG_A,z80str,TILE_ATTR(PAL3,FALSE,FALSE,FALSE),10,27,DMA);
+        VDP_drawTextEx(BG_A,z80str,basetile,10,27,DMA);
         *mapScrl -= FIX16(0.3334);
         VDP_setHorizontalScroll(BG_B,fix16ToRoundedInt(*mapScrl));
     }
@@ -556,9 +567,8 @@ void pickCG()
     difficulty = SRAM_readByte(diffSrm);
     SRAM_disable();
     SYS_enableInts();
-    waitMs(1131);
+    waitMs(49);
     PAL_fadeOutAll(30,FALSE);
-    waitMs(1000);
     VDP_clearPlane(BG_A,TRUE);
     VDP_clearPlane(BG_B,TRUE);
     VDP_releaseAllSprites();

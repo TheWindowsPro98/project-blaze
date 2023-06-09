@@ -2,7 +2,7 @@
 #define _RES_MUSIC_H_
 
 extern const u8 lvlclr[15360];
-extern const u8 gameover[14848];
+extern const u8 gameover[15360];
 extern const u8 rboss[23040];
 extern const u8 fboss[7424];
 extern const u8 ending[70656];
