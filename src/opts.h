@@ -5,7 +5,7 @@ extern Sprite* cursor_cnf;
 extern Sprite* cursor_plr;
 enum numOpts {optNum = 14, mainNum = 4};
 enum maxVals {scoreMax = 999990, livesMax = 99, lvlMax = 8, plrIDMax = 5};
-enum srmOffsets {lvlSrm, lsSrm, livesSrm, diffSrm, plrSrm, scoreSrm};
+enum srmOffsets {lvlSrm, lsSrm, livesSrm, diffSrm, plrSrm, scoreSrm, healthSrm = 9};
 enum xposes {optX = 23, mainX = 13, pauseX = 1};
 enum yposes {optY = 12, mainY = 13, pauseY = 2};
 
@@ -23,5 +23,4 @@ extern u8 lives;
 extern u8 difficulty;
 extern u32 score;
 extern u8 player_ci;
-extern fix16* mapScrl;
 extern u8* sndIndex;

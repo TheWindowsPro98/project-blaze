@@ -50,7 +50,7 @@ static void joyEvent_Stats(u16 joy, u16 changed, u16 state)
 {
 	if (changed & state & BUTTON_ALL)
 	{
-		SND_startPlay_PCM(select,sizeof(select),SOUND_RATE_13400,SOUND_PAN_CENTER,FALSE);
+		SND_startPlay_2ADPCM(select,sizeof(select),SOUND_PCM_CH_AUTO,FALSE);
 		mainscrn();
 	}
 }
@@ -72,6 +72,16 @@ static void pickStats()
 	VDP_drawTextEx(BG_A,"Enemies killed:",basetile,statX,statY+9,DMA);
 	VDP_drawTextEx(BG_A,"Items collected:",basetile,statX,statY+10,DMA);
 	VDP_drawTextEx(BG_A,"Back",basetile,statX+11,statY+12,DMA);
+	SYS_disableInts();
+	SRAM_enableRO();
+	round = SRAM_readByte(lvlSrm);
+	health = SRAM_readWord(healthSrm);
+	lsul = SRAM_readByte(lsSrm);
+	player_ci = SRAM_readByte(plrSrm);
+	difficulty = SRAM_readByte(diffSrm);
+	score = SRAM_readLong(scoreSrm);
+	SRAM_disable();
+	SYS_enableInts();
 	healthbar = SPR_addSprite(&bars,sPosToTPos(statX+8),sPosToTPos(statY+3),basetile);
 	SPR_setFrame(healthbar,fix16ToRoundedInt(health));
 	SPR_setPosition(cursor_cst,sPosToTPos(statX+10),sPosToTPos(statY+12));
@@ -80,10 +90,10 @@ static void pickStats()
 	char lsStr[2][4] = {{"No"},{"Yes"}};
 	char lvlStr[lvlMax+1][12] = {{"TBD"},{"TBD"},{"TBD"},{"TBD"},{"TBD"},{"TBD"},{"TBD"},{"TBD"},{"Test Level"}};
 	char diffStr[4][7] = {{"Easy"},{"Normal"},{"Hard"},{"Harder"}};
-	VDP_drawTextEx(BG_A,lvlStr[round],basetile,statX+17,statY+7,DMA);
+	VDP_drawTextEx(BG_A,lvlStr[round],basetile,statX+15,statY+7,DMA);
 	VDP_drawTextEx(BG_A,"0",basetile,statX+17,statY+10,DMA);
-	VDP_drawTextEx(BG_A,"0",basetile,statX+17,statY+9,DMA);
-	VDP_drawTextEx(BG_A,playerNames[player_ci],basetile,statX+17,statY,DMA);
+	VDP_drawTextEx(BG_A,"0",basetile,statX+16,statY+9,DMA);
+	VDP_drawTextEx(BG_A,playerNames[player_ci],basetile,statX+8,statY,DMA);
 	VDP_drawTextEx(BG_A,lsStr[lsul],basetile,statX+15,statY+6,DMA);
 	intToStr(score,scoreStr,6);
 	VDP_drawTextEx(BG_A,scoreStr,basetile,statX+7,statY+2,DMA);
@@ -95,8 +105,6 @@ static void pickStats()
 	{
 		SYS_doVBlankProcess();
 		SPR_update();
-		*mapScrl -= FIX16(0.3334);
-		VDP_setHorizontalScroll(BG_B,fix16ToRoundedInt(*mapScrl));
 	}
 	
 }
@@ -136,8 +144,7 @@ static void joyEvent_Title(u16 joy, u16 changed, u16 state)
 {
 	if (changed & state & BUTTON_START)
 	{
-		SND_startPlay_PCM(select,sizeof(select),SOUND_RATE_13400,SOUND_PAN_CENTER,FALSE);
-		SPR_init();
+		SND_startPlay_2ADPCM(select,sizeof(select),SOUND_PCM_CH_AUTO,FALSE);
 		mainscrn();
 	}
 }
@@ -146,17 +153,17 @@ static void joyEvent_ms(u16 joy, u16 changed, u16 state)
 {
 	if (changed & state & BUTTON_UP)
 	{
-		SND_startPlay_PCM(hover,sizeof(hover),SOUND_RATE_13400,SOUND_PAN_CENTER,FALSE);
+		SND_startPlay_2ADPCM(hover,sizeof(hover),SOUND_PCM_CH_AUTO,FALSE);
 		curMoveUpMain();
 	}
 	else if (changed & state & BUTTON_DOWN)
 	{
-		SND_startPlay_PCM(hover,sizeof(hover),SOUND_RATE_13400,SOUND_PAN_CENTER,FALSE);
+		SND_startPlay_2ADPCM(hover,sizeof(hover),SOUND_PCM_CH_AUTO,FALSE);
 		curMoveDownMain();
 	}
 	if (changed & state & BUTTON_START)
 	{
-		SND_startPlay_PCM(select,sizeof(select),SOUND_RATE_13400,SOUND_PAN_CENTER,FALSE);
+		SND_startPlay_2ADPCM(select,sizeof(select),SOUND_PCM_CH_AUTO,FALSE);
 		selectOptMain(*currentIndex);
 	}
 }
@@ -166,30 +173,26 @@ void mainscrn()
 	if (memAllocated == FALSE)
 	{
 		currentIndex = MEM_alloc(sizeof(u8));
-		mapScrl = MEM_alloc(sizeof(fix16));
 		sndIndex = MEM_alloc(sizeof(u8));
 		memAllocated = TRUE;
 	}
-	*mapScrl = 0;
 	VRAM_free(&title_vram, ind);
 	VRAM_clearRegion(&title_vram);
 	VRAM_clearRegion(&title_vram);
-	VRAM_createRegion(&options_vram,TILE_USER_INDEX,18);
-	ind = VRAM_alloc(&options_vram, 18);
+	VRAM_createRegion(&options_vram,TILE_USER_INDEX,1120);
+	ind = VRAM_alloc(&options_vram, 1120);
 	*currentIndex = 0;
 	SPR_end();
 	SPR_init();
 	u16 basetile = TILE_ATTR(PAL3,FALSE,FALSE,FALSE);
 	u16 basetileDisabled = TILE_ATTR(PAL0,FALSE,FALSE,FALSE);
-	u16 basetileFull = TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,ind);
+	u16 basetileFull = TILE_ATTR_FULL(PAL1,FALSE,FALSE,FALSE,ind);
 	cursor_cst = SPR_addSprite(&cursor,320,0,basetile);
 	cursor_cnf = SPR_addSprite(&cursor,328,0,basetileDisabled);
 	cursor_plr = SPR_addSprite(&cursor,336,0,basetileDisabled);
 	fadeInPalette(options_pal,player_palettes[1],30,TRUE);
 	VDP_clearPlane(BG_A,TRUE);
-	VDP_loadTileSet(&opts_tiles,ind,DMA);
-	VDP_setTileMapEx(BG_B,&options_map,basetileFull,0,0,0,0,64,28,DMA);
-	VDP_setScrollingMode(HSCROLL_PLANE,VSCROLL_PLANE);
+	VDP_drawImageEx(BG_B,&options_bg,basetileFull,0,0,FALSE,TRUE);
 	JOY_setEventHandler(joyEvent_ms);
 	mainCurUpd();
 	for (u8 i = 0; i < mainNum; i++)
@@ -199,8 +202,6 @@ void mainscrn()
 	}
 	while(1)
 	{
-		*mapScrl -= FIX16(0.3334);
-		VDP_setHorizontalScroll(BG_B,fix16ToRoundedInt(*mapScrl));
 		SPR_update();
 		SYS_doVBlankProcess();
 	}
@@ -212,14 +213,14 @@ static void title()
 	VRAM_releaseRegion(&sega_scrn);
 	VDP_clearPlane(BG_A,TRUE);
 	fadeInPalette(title_pal,player_palettes,30,TRUE);
-	VRAM_createRegion(&title_vram,TILE_USER_INDEX,440);
-	ind = VRAM_alloc(&title_vram,440);
+	VRAM_createRegion(&title_vram,TILE_USER_INDEX,170);
+	ind = VRAM_alloc(&title_vram,170);
 	u16 basetile = TILE_ATTR(PAL3,FALSE,FALSE,FALSE);
 	u16 basetileVRAM = TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,ind);
 	VDP_drawImageEx(BG_A,&title_logo,basetileVRAM,0,0,FALSE,TRUE);
 	VDP_drawTextEx(BG_A, "} TheWindowsPro98 2022-2023", basetile,0,27,DMA);
-	VDP_drawTextEx(BG_A, "Version pa5.17",basetile,12,12,DMA);
-	VDP_drawTextEx(BG_A,"PRESS  START",basetile,13,13,DMA);
+	VDP_drawTextEx(BG_A, "Version pa6.0",basetile,12,12,DMA);
+	VDP_drawTextEx(BG_A,"PRESS START",basetile,13,13,DMA);
 	XGM_startPlay(titlevgm);
 	JOY_setEventHandler(joyEvent_Title);
 	while (1)
@@ -253,28 +254,31 @@ u8 getConsoleRegion()
 
 int main(bool resetType)
 {
-	u8 consoleType = getConsoleRegion();
-	char ctStrs[4][35] = {"This game is not optimized for PAL","consoles.","Hell, I didn't even know Japan had","PAL consoles."};
 	fadeInPalette(sega_pal,player_palettes[0],30,TRUE);
 	VDP_loadFont(menu_font.tileset,DMA);
-	u16 basetile = TILE_ATTR(PAL3,FALSE,FALSE,FALSE);
-	u16 basetileVRAM = TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,ind);
 	VRAM_createRegion(&sega_scrn,TILE_USER_INDEX,56);
 	ind = VRAM_alloc(&sega_scrn,56);
+	u16 basetile = TILE_ATTR(PAL3,FALSE,FALSE,FALSE);
+	u16 basetileVRAM = TILE_ATTR_FULL(PAL0,FALSE,FALSE,FALSE,ind);
+	char ctStrs[4][35] = {"This game is not optimized for PAL","consoles.","Hell, I didn't even know Japan had","PAL consoles."};
+	u8 consoleType = getConsoleRegion();
+	u8 i = 0;
 	switch (consoleType)
 	{
 	case palEUR:
 	{
-		VDP_drawTextEx(BG_A,ctStrs[0],basetile,0,0,DMA);
-		VDP_drawTextEx(BG_A,ctStrs[1],basetile,0,1,DMA);
+		for (i; i < 2; i++)
+		{
+			VDP_drawTextEx(BG_A,ctStrs[i],basetile,0,i,DMA);
+		}
 		break;
 	}
 	case palJPN:
 	{
-		VDP_drawTextEx(BG_A,ctStrs[0],basetile,0,0,DMA);
-		VDP_drawTextEx(BG_A,ctStrs[1],basetile,0,1,DMA);
-		VDP_drawTextEx(BG_A,ctStrs[2],basetile,0,2,DMA);
-		VDP_drawTextEx(BG_A,ctStrs[3],basetile,0,3,DMA);
+		for (i; i < 4; i++)
+		{
+			VDP_drawTextEx(BG_A,ctStrs[i],basetile,0,i,DMA);
+		}
 		break;
 	}
 	default:
@@ -284,10 +288,10 @@ int main(bool resetType)
 	}
 	if (resetType == 0)
 	{
-		killExec(genericErr);
+		SYS_hardReset();
 	}
 	VDP_drawImageEx(BG_A, &sega_logo,basetileVRAM, 12, 12, FALSE, TRUE);
-	SND_startPlay_PCM(segapcm,sizeof(segapcm),SOUND_RATE_13400,SOUND_PAN_CENTER,FALSE);
+	SND_startPlay_2ADPCM(segapcm,sizeof(segapcm),SOUND_PCM_CH_AUTO,FALSE);
 	JOY_setEventHandler(joyEvent_SEGA);
 	waitMs(2048);
 	PAL_fadeOutAll(30,FALSE);

@@ -12,7 +12,6 @@ u8 player_ci = 0x03;            // 0 = Jade, 1 = Stephanie, 2 = Emma, 3 = Selina
 u8* sndIndex = 0x00;             // Sound Select Index
 Sprite* cursor_cnf;
 Sprite* cursor_plr;
-fix16* mapScrl;
 Sprite* cursor_cst;
 
 const Option menu_ops[optNum] = {
@@ -32,7 +31,7 @@ const Option menu_ops[optNum] = {
     {optX-6, optY+10, "Exit"},
 };
 
-void opsCurUpd()
+static void opsCurUpd()
 {
     SPR_setPosition(cursor_cst,sPosToTPos(menu_ops[*currentIndex].x)-8,sPosToTPos(menu_ops[*currentIndex].y));
 }
@@ -72,7 +71,6 @@ void pickSG()
     VDP_clearPlane(BG_A,TRUE);
     VDP_clearPlane(BG_B,TRUE);
     SPR_reset();
-    MEM_free(mapScrl);
     MEM_free(sndIndex);
     MEM_free(currentIndex);
     score = 0;
@@ -211,7 +209,6 @@ static void selectMusOpts()
 static void selectSfxOpts()
 {
     u8 xgmCount = 90;
-    u8 pcmCount = 5;
     if (*sndIndex <= xgmCount)
     {
         sampleDefs();
@@ -223,27 +220,27 @@ static void selectSfxOpts()
         {
         case 91:
         {
-            SND_startPlay_PCM(crash,sizeof(crash),SOUND_RATE_13400,SOUND_PAN_CENTER,FALSE);
+            SND_startPlay_2ADPCM(crash,sizeof(crash),SOUND_PCM_CH_AUTO,FALSE);
             break;
         }
         case 92:
         {
-            SND_startPlay_PCM(back,sizeof(back),SOUND_RATE_13400,SOUND_PAN_CENTER,FALSE);
+            SND_startPlay_2ADPCM(back,sizeof(back),SOUND_PCM_CH_AUTO,FALSE);
             break;
         }
         case 93:
         {
-            SND_startPlay_PCM(segapcm,sizeof(segapcm),SOUND_RATE_13400,SOUND_PAN_CENTER,FALSE);
+            SND_startPlay_2ADPCM(segapcm,sizeof(segapcm),SOUND_PCM_CH_AUTO,FALSE);
             break;
         }
         case 94:
         {
-            SND_startPlay_PCM(select,sizeof(select),SOUND_RATE_13400,SOUND_PAN_CENTER,FALSE);
+            SND_startPlay_2ADPCM(select,sizeof(select),SOUND_PCM_CH_AUTO,FALSE);
             break;
         }
         case 95:
         {
-            SND_startPlay_PCM(hover,sizeof(hover),SOUND_RATE_13400,SOUND_PAN_CENTER,FALSE);
+            SND_startPlay_2ADPCM(hover,sizeof(hover),SOUND_PCM_CH_AUTO,FALSE);
             break;
         }
         default:
@@ -255,7 +252,7 @@ static void selectSfxOpts()
     
 }
 
-void selectOptionOpts(u16 Option)
+static void selectOptionOpts(u16 Option)
 {
     switch (Option)
     {
@@ -321,7 +318,7 @@ void selectOptionOpts(u16 Option)
     }
     case 10:
     {
-        SND_startPlay_PCM(hover,sizeof(hover),SOUND_RATE_13400,SOUND_PAN_CENTER,FALSE);
+        SND_startPlay_2ADPCM(hover,sizeof(hover),SOUND_PCM_CH_AUTO,FALSE);
         lives = livesMax;
         break;
     }
@@ -343,11 +340,11 @@ void selectOptionOpts(u16 Option)
     {
         if (lsul == FALSE)
         {
-            SND_startPlay_PCM(back,sizeof(back),SOUND_RATE_13400,SOUND_PAN_CENTER,FALSE);
+            SND_startPlay_2ADPCM(back,sizeof(back),SOUND_PCM_CH_AUTO,FALSE);
         }
         else
         {
-            SND_startPlay_PCM(hover,sizeof(hover),SOUND_RATE_13400,SOUND_PAN_CENTER,FALSE);
+            SND_startPlay_2ADPCM(hover,sizeof(hover),SOUND_PCM_CH_AUTO,FALSE);
         }
         break;
     }
@@ -368,13 +365,13 @@ static void joyEvent_ops(u16 joy,u16 changed,u16 state)
     if (changed & state & BUTTON_UP)
 	{
         PSG_reset();
-		SND_startPlay_PCM(hover,sizeof(hover),SOUND_RATE_13400,SOUND_PAN_CENTER,FALSE);
+		SND_startPlay_2ADPCM(hover,sizeof(hover),SOUND_PCM_CH_AUTO,FALSE);
 		curMoveUpOps();
 	}
 	else if (changed & state & BUTTON_DOWN)
 	{
         PSG_reset();
-		SND_startPlay_PCM(hover,sizeof(hover),SOUND_RATE_13400,SOUND_PAN_CENTER,FALSE);
+		SND_startPlay_2ADPCM(hover,sizeof(hover),SOUND_PCM_CH_AUTO,FALSE);
 		curMoveDownOps();
 	}
     if (changed & state & BUTTON_RIGHT)
@@ -383,27 +380,27 @@ static void joyEvent_ops(u16 joy,u16 changed,u16 state)
         {
             if (lives < livesMax)
             {
-                SND_startPlay_PCM(hover,sizeof(hover),SOUND_RATE_13400,SOUND_PAN_CENTER,FALSE);
+                SND_startPlay_2ADPCM(hover,sizeof(hover),SOUND_PCM_CH_AUTO,FALSE);
                 lives++;
             }
         }
         else if (*currentIndex == sndOpts)
         {
             PSG_reset();
-            SND_startPlay_PCM(hover,sizeof(hover),SOUND_RATE_13400,SOUND_PAN_CENTER,FALSE);
+            SND_startPlay_2ADPCM(hover,sizeof(hover),SOUND_PCM_CH_AUTO,FALSE);
             *sndIndex += 1;
         }
         else if (*currentIndex == lsOpts)
         {
             if (lsul == FALSE)
             {
-                SND_startPlay_PCM(back,sizeof(back),SOUND_RATE_13400,SOUND_PAN_CENTER,FALSE);
+                SND_startPlay_2ADPCM(back,sizeof(back),SOUND_PCM_CH_AUTO,FALSE);
             }
             else
             {
                 if (round < lvlMax)
                 {
-                    SND_startPlay_PCM(hover,sizeof(hover),SOUND_RATE_13400,SOUND_PAN_CENTER,FALSE);
+                    SND_startPlay_2ADPCM(hover,sizeof(hover),SOUND_PCM_CH_AUTO,FALSE);
                     round++;
                 }
             }
@@ -415,27 +412,27 @@ static void joyEvent_ops(u16 joy,u16 changed,u16 state)
         {
             if (lives > 1)
             {
-                SND_startPlay_PCM(hover,sizeof(hover),SOUND_RATE_13400,SOUND_PAN_CENTER,FALSE);
+                SND_startPlay_2ADPCM(hover,sizeof(hover),SOUND_PCM_CH_AUTO,FALSE);
                 lives--;
             }
         }
         else if (*currentIndex == sndOpts)
         {
             PSG_reset();
-            SND_startPlay_PCM(hover,sizeof(hover),SOUND_RATE_13400,SOUND_PAN_CENTER,FALSE);
+            SND_startPlay_2ADPCM(hover,sizeof(hover),SOUND_PCM_CH_AUTO,FALSE);
             *sndIndex -= 1;
         }
         else if (*currentIndex == lsOpts)
         {
             if (lsul == FALSE)
             {
-                SND_startPlay_PCM(back,sizeof(back),SOUND_RATE_13400,SOUND_PAN_CENTER,FALSE);
+                SND_startPlay_2ADPCM(hover,sizeof(hover),SOUND_PCM_CH_AUTO,FALSE);
             }
             else
             {
                 if (round > 0)
                 {
-                    SND_startPlay_PCM(hover,sizeof(hover),SOUND_RATE_13400,SOUND_PAN_CENTER,FALSE);
+                    SND_startPlay_2ADPCM(hover,sizeof(hover),SOUND_PCM_CH_AUTO,FALSE);
                     round--;
                 }
             }
@@ -444,14 +441,14 @@ static void joyEvent_ops(u16 joy,u16 changed,u16 state)
 
 	if (changed & state & BUTTON_START)
 	{
-		SND_startPlay_PCM(select,sizeof(select),SOUND_RATE_13400,SOUND_PAN_CENTER,FALSE);
+		SND_startPlay_2ADPCM(select,sizeof(select),SOUND_PCM_CH_AUTO,FALSE);
 		selectOptionOpts(*currentIndex);
 	}
     else if (changed & state & BUTTON_MODE)
     {
         if (*currentIndex == livesOpts)
         {
-            SND_startPlay_PCM(hover,sizeof(hover),SOUND_RATE_13400,SOUND_PAN_CENTER,FALSE);
+            SND_startPlay_2ADPCM(hover,sizeof(hover),SOUND_PCM_CH_AUTO,FALSE);
             lives = 1;
         }
     }
@@ -459,7 +456,7 @@ static void joyEvent_ops(u16 joy,u16 changed,u16 state)
     {
         XGM_stopPlay();
         PSG_reset();
-        SND_startPlay_PCM(back,sizeof(back),SOUND_RATE_13400,SOUND_PAN_CENTER,FALSE);
+        SND_startPlay_2ADPCM(back,sizeof(back),SOUND_PCM_CH_AUTO,FALSE);
         mainscrn();
     }
     if (changed & state & BUTTON_A)
@@ -467,7 +464,7 @@ static void joyEvent_ops(u16 joy,u16 changed,u16 state)
         if (*currentIndex == sndOpts)
         {
             PSG_reset();
-            SND_startPlay_PCM(hover,sizeof(hover),SOUND_RATE_13400,SOUND_PAN_CENTER,FALSE);
+            SND_startPlay_2ADPCM(hover,sizeof(hover),SOUND_PCM_CH_AUTO,FALSE);
             *sndIndex -= 10;
         }
     }
@@ -476,7 +473,7 @@ static void joyEvent_ops(u16 joy,u16 changed,u16 state)
         if (*currentIndex == sndOpts)
         {
             PSG_reset();
-            SND_startPlay_PCM(hover,sizeof(hover),SOUND_RATE_13400,SOUND_PAN_CENTER,FALSE);
+            SND_startPlay_2ADPCM(hover,sizeof(hover),SOUND_PCM_CH_AUTO,FALSE);
             *sndIndex += 10;
         }
     }
@@ -548,14 +545,11 @@ void pickOpts()
         z80ld = XGM_getCPULoad();
         intToStr(z80ld,z80str,3);
         VDP_drawTextEx(BG_A,z80str,basetile,10,27,DMA);
-        *mapScrl -= FIX16(0.3334);
-        VDP_setHorizontalScroll(BG_B,fix16ToRoundedInt(*mapScrl));
     }
 }
 
-void pickCG()
+static void pickCG()
 {
-    MEM_free(mapScrl);
     MEM_free(sndIndex);
     MEM_free(currentIndex);
     SYS_disableInts();
@@ -565,6 +559,7 @@ void pickCG()
     score = SRAM_readLong(scoreSrm);
     player_ci = SRAM_readByte(plrSrm);
     difficulty = SRAM_readByte(diffSrm);
+    health = FIX16(SRAM_readWord(healthSrm));
     SRAM_disable();
     SYS_enableInts();
     waitMs(49);

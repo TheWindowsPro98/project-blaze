@@ -23,13 +23,13 @@ bool paused;
 bool isJumping;
 bool isGrounded;
 fix16 health;
-const u32 mapWidths[lvlMax] = 
+const u32 mapWidths[lvlMax+1] = 
 {
-    0,0,0,0,0,0,0,1280
+    0,0,0,0,0,0,0,0,1280
 };
-const u32 mapHeights[lvlMax] = 
+const u32 mapHeights[lvlMax+1] = 
 {
-    0,0,0,0,0,0,0,448
+    0,0,0,0,0,0,0,0,448
 };
 s16 new_cam_x;
 s16 new_cam_y;
@@ -111,7 +111,6 @@ static void spawnPlayer()
 
 static void spawnHUD()
 {
-    VDP_setScreenHeight240();
     u16 basetile = TILE_ATTR(PAL3,FALSE,FALSE,FALSE);
     u16 end = &stg_vram[round]->endIndex;
     VRAM_createRegion(&windowgfx_vram,end,4);
@@ -235,17 +234,17 @@ static void camPos()
     {
         new_cam_x = 0;
     }
-    else if (new_cam_x > (mapWidths[round-1] - horzRes))
+    else if (new_cam_x > (mapWidths[round] - horzRes))
     {
-        new_cam_x = mapWidths[round-1] - horzRes;
+        new_cam_x = mapWidths[round] - horzRes;
     }
-    if (new_cam_y < 0)
+    if (new_cam_y < 16)
     {
-        new_cam_y = 0;
+        new_cam_y = 16;
     }
-    else if (new_cam_y > (mapHeights[round-1] - vertRes))
+    else if (new_cam_y > (mapHeights[round] - vertRes))
     {
-        new_cam_y = mapHeights[round-1] - vertRes;
+        new_cam_y = mapHeights[round] - vertRes;
     }
     if ((cam_x != new_cam_x) || (cam_y != new_cam_y))
     {
@@ -265,20 +264,26 @@ static void playerPos()
     {
         player_x = FIX32(0);
     }
-    else if (player_x > FIX32(mapWidths[round-1] - playerWidth))
+    else if (player_x > FIX32(mapWidths[round] - playerWidth))
     {
-        player_x = FIX32(mapWidths[round-1] - playerWidth);
+        player_x = FIX32(mapWidths[round] - playerWidth);
     }
-    if (player_y < FIX32(0))
+    if (player_y < FIX32(playerHeight))
     {
-        player_y = FIX32(0);
+        player_y = FIX32(playerHeight);
     }
-    else if (player_y > FIX32(mapHeights[round-1] - playerHeight))
+    else if (player_y > FIX32(mapHeights[round] - playerHeight))
     {
-        player_y = FIX32(mapHeights[round-1] - playerHeight);
+        player_y = FIX32(mapHeights[round] - playerHeight);
     }
 }
 
+/// @brief Draw a string of hexadecimal characters from a base integer.
+/// @param value Value to convert.
+/// @param destStr Character string recieving text
+/// @param minChr Minimum amount of characters to draw
+/// @param x X coordinate
+/// @param y Y coordinate
 static void drawIntToHex(s32 value, const char destStr[], u8 minChr, u8 x, u8 y)
 {
     intToHex(value, destStr, minChr);
