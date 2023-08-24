@@ -1,7 +1,7 @@
 # Project Blaze
 
-## (Name not final)
+## (Name not final, never will be)
 
-### Hey, what the hell? You're not supposed to be here! (yet)
+### You shouldn't be here.
 
-I'll update the description later, not like anyone's gonna see it now.
+This repository is archived for a reason. Go check out the much higher quality [Project Daisy](https://www.github.com/TheWindowsPro98/project-daisy)
